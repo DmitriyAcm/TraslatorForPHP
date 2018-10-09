@@ -66,7 +66,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SINGLE_QUOTED_STRING>\\\\     		{ strcat(buf, "\\"); }
 <SINGLE_QUOTED_STRING>\\[^\\\']     { strcat(buf, yytext); }
 <SINGLE_QUOTED_STRING>[^\\\']+		{ strcat(buf, yytext); }
-<SINGLE_QUOTED_STRING>\'			{ BEGIN(PHP); printf("Found single quoted literal \"%s\" from line %d to line %d\n", buf, s, yylineno); }
+<SINGLE_QUOTED_STRING>\'			{ BEGIN(PHP); printf("Found single quoted literal \"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
 
 <PHP>"<<<"              			{ BEGIN(BEGDOC); }
 <BEGDOC>[ \t]*            			;
@@ -80,8 +80,8 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 										{
 											BEGIN(PHP);
 											buf[strlen(buf)-1] = '\0';
-											if (cur_state == HEREDOC) 	{ printf("Found heredoc literal \"%s\" from line %d to line %d\n", buf, s, yylineno); }
-											else 						{ printf("Found nowdoc literal \"%s\" from line %d to line %d\n", buf, s, yylineno); }
+											if (cur_state == HEREDOC) 	{ printf("Found string literal\n%s\nfrom line %d to line %d\n", buf, s, yylineno); }
+											else 						{ printf("Found nowdoc literal\n \"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
 											printf("Found symbol \";\" in line %d\n", yylineno);
 										}
 										else
@@ -89,13 +89,16 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 											strcat(buf,yytext);
 										}
 									}
-									
+															
 <NOWDOC>\n+							{ strcat(buf,yytext); }
-<NOWDOC>[^\s\n]+					{ strcat(buf,yytext); }
+<NOWDOC>[^\s\n]+						{ strcat(buf,yytext); }
 
 
 <PHP>"\""											{ BEGIN(DOUBLE_QUOTED_STRING); cur_state = DOUBLE_QUOTED_STRING;  buf[0]='\0'; s = yylineno; }
 <DOUBLE_QUOTED_STRING>[^\\\"\$\{]+					{ strcat(buf,yytext); }
+
+<HEREDOC>[^\\\$\{]									{ strcat(buf,yytext); }
+
 <DOUBLE_QUOTED_STRING,HEREDOC>\\\$					{ strcat(buf,"$"); }
 <DOUBLE_QUOTED_STRING,HEREDOC>\\\{					{ strcat(buf,"{"); }
 <DOUBLE_QUOTED_STRING,HEREDOC>\{\$\}				{ strcat(buf,"{$}"); }
@@ -114,8 +117,8 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 													  strcat(buf,"\n"); 
 													  num[0]='\0';  
 													}
-<DOUBLE_QUOTED_STRING,HEREDOC>(\{\$)|(\$\{) 		{ BEGIN(COMPLEX_INSERT); printf("Found start complex insert in literal from line %d\n{\n",  yylineno); }
-<COMPLEX_INSERT>\}									{ BEGIN(cur_state); printf("}\n",  yylineno); }
+<DOUBLE_QUOTED_STRING,HEREDOC>(\{\$)|(\$\{) 		{ BEGIN(COMPLEX_INSERT); int curline = yylineno; printf("Found string literal\n%s\nfrom line %d to line %d\nFound operator \".\" in line %d\n", buf, s, curline, curline); buf[0]='\0'; }
+<COMPLEX_INSERT>\}									{ BEGIN(cur_state); printf("Found operator \".\" in line %d\n",  yylineno); }
 <DOUBLE_QUOTED_STRING,HEREDOC>\{					{ strcat(buf,yytext); }
 <DOUBLE_QUOTED_STRING,HEREDOC>\\\\					{ strcat(buf,"\\"); }
 <DOUBLE_QUOTED_STRING,HEREDOC>\\n			 		{ strcat(buf,"\n"); }
@@ -127,12 +130,13 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <DOUBLE_QUOTED_STRING,HEREDOC>\\[0-7]{1,3}  		{ single_char_str[0]=(char)strtol(yytext+1,NULL,8); single_char_str[1] = '\0'; strcat(buf,single_char_str);}
 <DOUBLE_QUOTED_STRING,HEREDOC>\\x[0-9A-Fa-f]{1,2}   { single_char_str[0]=(char)strtol(yytext+2,NULL,16); single_char_str[1] = '\0'; strcat(buf,single_char_str);}
 <DOUBLE_QUOTED_STRING>\\\"			 				{ strcat(buf,"\""); }
-<DOUBLE_QUOTED_STRING>\"			 				{ BEGIN(PHP); printf("Found double quoted literal \"%s\" from line %d to line %d\n", buf, s, yylineno); }
+<DOUBLE_QUOTED_STRING>\"			 				{ BEGIN(PHP); printf("Found double quoted literal \"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
 
-			
+<HEREDOC>\\											{ strcat(buf,"\\"); }
 <HEREDOC>\s.*										{ strcat(buf,yytext); }
-<HEREDOC,DOUBLE_QUOTED_STRING>\n+					{ strcat(buf,yytext); }
-<HEREDOC>;											{ strcat(buf,yytext); }
+
+
+
 
 \<\?(php)?										{ BEGIN(PHP); printf("Found start PHP-script in line %d\n", yylineno); }
 <PHP>\?\>										{ BEGIN(INITIAL); printf("Found end PHP-script in line %d\n", yylineno); }
