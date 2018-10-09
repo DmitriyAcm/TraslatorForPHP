@@ -91,7 +91,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 									}
 															
 <NOWDOC>\n+							{ strcat(buf,yytext); }
-<NOWDOC>[^\s\n]+						{ strcat(buf,yytext); }
+<NOWDOC>[^\s\n]+					{ strcat(buf,yytext); }
 
 
 <PHP>"\""											{ BEGIN(DOUBLE_QUOTED_STRING); cur_state = DOUBLE_QUOTED_STRING;  buf[0]='\0'; s = yylineno; }
@@ -159,15 +159,20 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <COMPLEX_INSERT,PHP>continue					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>do							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>while						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<COMPLEX_INSERT,PHP>endwhile					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>for							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<COMPLEX_INSERT,PHP>endfor						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>foreach						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<COMPLEX_INSERT,PHP>endforeach					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>echo						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>if							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>elseif						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>else						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<COMPLEX_INSERT,PHP>endif						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>function					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>return						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>static						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<COMPLEX_INSERT,PHP>var						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 
 <COMPLEX_INSERT,PHP>"++"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <COMPLEX_INSERT,PHP>"--"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
