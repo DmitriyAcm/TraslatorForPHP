@@ -154,7 +154,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <DOUBLE_QUOTED_STRING>\\\"			 				{ strcat(buf,"\""); }
 <DOUBLE_QUOTED_STRING>\"			 				{ BEGIN(PHP); printf("Found double quoted literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
 
-<HEREDOC>\\											{ strcat(buf,"\\"); }
+<DOUBLE_QUOTED_STRING,HEREDOC>\\											{ strcat(buf,"\\"); }
 <HEREDOC>\s.*										{ strcat(buf,yytext); }
 
 
