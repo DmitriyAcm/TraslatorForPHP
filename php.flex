@@ -81,7 +81,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 											BEGIN(PHP);
 											buf[strlen(buf)-1] = '\0';
 											if (cur_state == HEREDOC) 	{ printf("Found string literal\n%s\nfrom line %d to line %d\n", buf, s, yylineno); }
-											else 						{ printf("Found nowdoc literal\n \"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
+											else 						{ printf("Found nowdoc literal\n%s\nfrom line %d to line %d\n", buf, s, yylineno); }
 											printf("Found symbol \";\" in line %d\n", yylineno);
 										}
 										else
@@ -110,7 +110,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 													  strcat(buf,num);
 													  strcat(buf,"\n"); 
 													  
-													  strcat(buf,"\nFound begin identifier \"");
+													  strcat(buf,"Found begin identifier \"");
 													  strcat(buf,yytext+1);
 													  strcat(buf,"\" in line ");
 													  strcat(buf,num);
