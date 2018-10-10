@@ -49,6 +49,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 	char num[20];
 	int cur_state;
 	int cur_complex_state;
+	int last_state;
 %}
 
 
@@ -69,7 +70,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SINGLE_QUOTED_STRING>\\\\     		{ strcat(buf, "\\"); }
 <SINGLE_QUOTED_STRING>\\[^\\\']     { strcat(buf, yytext); }
 <SINGLE_QUOTED_STRING>[^\\\']+		{ strcat(buf, yytext); }
-<SINGLE_QUOTED_STRING>\'			{ BEGIN(PHP); printf("Found single quoted literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
+<SINGLE_QUOTED_STRING>\'			{ BEGIN(PHP); printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
 
 <PHP>"<<<"              			{ BEGIN(BEGDOC); }
 <BEGDOC>[ \t]*            			;
@@ -77,14 +78,16 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <BEGDOC>\'{ID}\'\n          		{ BEGIN(NOWDOC); cur_state = NOWDOC; buf[0]='\0'; stringID[0]='\0'; strcpy(stringID,yytext+1); stringID[strlen(stringID)-2]='\0'; s = yylineno; }
 <BEGDOC>{ID}\n            			{ BEGIN(HEREDOC); cur_state = HEREDOC; buf[0]='\0'; stringID[0]='\0'; strcpy(stringID,yytext); stringID[strlen(stringID)-1]='\0'; s = yylineno; }
 
-<NOWDOC,HEREDOC>^{ID};				{
-										yytext[strlen(yytext)-1] = '\0';
-										if (strcmp(yytext,stringID)==0)
+<NOWDOC,HEREDOC>^{ID};\n			{
+										char check_end[1000] = "";
+										strncat(check_end, yytext, strcspn(yytext,";"));
+										check_end[strlen(check_end)] = '\0';
+										//yytext[strlen(yytext)-1] = '\0';
+										if (strcmp(check_end,stringID)==0)
 										{
 											BEGIN(PHP);
 											buf[strlen(buf)-1] = '\0';
-											if (cur_state == HEREDOC) 	{ printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
-											else 						{ printf("Found nowdoc literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
+											printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno);					
 											printf("Found symbol \";\" in line %d\n", yylineno);
 										}
 										else
@@ -115,8 +118,10 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 														printf("Found operator \"$\" in line %d\n",curline);
 														printf("Found identifier \"%s\" in line %d\n",yytext+1,curline);
 														buf[0]='\0';
+														last_state = cur_state;
 														BEGIN(SIMPLE_COMPLEX_INSERT);
 													}
+<SIMPLE_COMPLEX_INSERT>[^\[-]						{	BEGIN(last_state); printf("Found operator \".\" in line %d\n", yylineno); strcat(buf,yytext); }
 <SIMPLE_COMPLEX_INSERT>\[							{ 
 														printf("Found symbol \"[\" in line %d\n",yylineno);
 														cur_complex_state = cur_state;
@@ -152,7 +157,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <DOUBLE_QUOTED_STRING,HEREDOC>\\[0-7]{1,3}  		{ single_char_str[0]=(char)strtol(yytext+1,NULL,8); single_char_str[1] = '\0'; strcat(buf,single_char_str);}
 <DOUBLE_QUOTED_STRING,HEREDOC>\\x[0-9A-Fa-f]{1,2}   { single_char_str[0]=(char)strtol(yytext+2,NULL,16); single_char_str[1] = '\0'; strcat(buf,single_char_str);}
 <DOUBLE_QUOTED_STRING>\\\"			 				{ strcat(buf,"\""); }
-<DOUBLE_QUOTED_STRING>\"			 				{ BEGIN(PHP); printf("Found double quoted literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
+<DOUBLE_QUOTED_STRING>\"			 				{ BEGIN(PHP); printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
 
 <DOUBLE_QUOTED_STRING,HEREDOC>\\											{ strcat(buf,"\\"); }
 <HEREDOC>\s.*										{ strcat(buf,yytext); }
@@ -200,13 +205,19 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"--"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"!" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"*" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"*=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"**" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"**=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"/" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"/=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"%" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"+" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"+=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"." 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>".=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"," 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"-" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"-=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"<" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"<=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>">" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
@@ -222,6 +233,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"$" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>";" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>":" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"(" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>")" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"{" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
@@ -240,13 +252,13 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"->"						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"=>" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{TRUE}						{ printf("Found boolean value \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{FALSE}					{ printf("Found boolean value \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{NULL}						{ printf("Found value \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{TRUE}						{ printf("Found boolean value TRUE in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{FALSE}					{ printf("Found boolean value FALSE in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{NULL}						{ printf("Found value NULL in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{INT_10}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,10), yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{INT_16}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,16), yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{INT_8}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,8), yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{INT_2}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,2), yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{INT_2}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext+2,NULL,2), yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{FLOAT}					{ printf("Found float value %f in line %d\n", atof(yytext), yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{EXPONENT}					{ printf("Found float value %f in line %d\n", atof(yytext), yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{ID}						{ printf("Found identifier \"%s\" in line %d\n", yytext, yylineno); }
