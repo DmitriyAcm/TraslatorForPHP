@@ -119,7 +119,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 														BEGIN(SIMPLE_COMPLEX_INSERT);
 													}
 <DOUBLE_QUOTED_STRING,HEREDOC>\$					{ strcat(buf,"$"); }
-<SIMPLE_COMPLEX_INSERT>[^\[-]						{	BEGIN(last_state); printf("Found operator \".\" in line %d\n", yylineno); strcat(buf,yytext); }
+<SIMPLE_COMPLEX_INSERT>[^\[-]						{ BEGIN(last_state); printf("Found operator \".\" in line %d\n", yylineno); strcat(buf,yytext); }
 <SIMPLE_COMPLEX_INSERT>\[							{ 
 														printf("Found symbol \"[\" in line %d\n",yylineno);
 														cur_complex_state = cur_state;
@@ -132,6 +132,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 														printf("Found identifier \"%s\" in line %d\n",yytext+2,curline);
 														BEGIN(cur_state);
 													}
+<SIMPLE_COMPLEX_INSERT>[-]						    { BEGIN(last_state); printf("Found operator \".\" in line %d\n", yylineno); strcat(buf,yytext); }
 <DOUBLE_QUOTED_STRING,HEREDOC>(\{\$)|(\$\{) 		{ 
 														BEGIN(HARD_COMPLEX_INSERT); 
 														cur_complex_state = cur_state; 
