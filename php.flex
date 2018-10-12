@@ -47,7 +47,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 	char stringID[100000];
 	char single_char_str[10];
 	char num[20];
-	int cur_state;
+	int cur_state = PHP;
 	int cur_complex_state;
 	int last_state;
 %}
@@ -244,16 +244,16 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 																				if(cur_state == SIMPLE_SQUARE_BRACKETS){
 																					cur_state=cur_complex_state;
 																					printf("Found operator \".\" in line %d\n", yylineno);
+																					BEGIN(cur_state);
 																				}
-																				BEGIN(cur_state);
 																			}
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"::" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"->"						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"=>" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{TRUE}						{ printf("Found boolean value TRUE in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{FALSE}					{ printf("Found boolean value FALSE in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{NULL}						{ printf("Found value NULL in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{TRUE}						{ printf("Found boolean value TRUE in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{FALSE}					{ printf("Found boolean value FALSE in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{NULL}						{ printf("Found value NULL in line %d\n", yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{INT_10}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,10), yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{INT_16}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,16), yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>{INT_8}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,8), yylineno); }
