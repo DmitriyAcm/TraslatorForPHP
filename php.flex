@@ -196,6 +196,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>else						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>endif						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>function					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>instanceof					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>return						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>static						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>var							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
@@ -217,6 +218,10 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"," 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"-" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"-=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"<<" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>">>" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"<<=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>">>=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"<" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"<=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>">" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
@@ -233,6 +238,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>";" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>":" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"?" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"(" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>")" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"{" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
