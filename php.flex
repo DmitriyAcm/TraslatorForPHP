@@ -195,6 +195,10 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>elseif						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>else						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>endif						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>switch						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>case						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>default						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>endswitch						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>function					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>instanceof					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>return						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
