@@ -162,46 +162,47 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 
 
 
-\<\?(php)?										{ BEGIN(PHP); printf("Found start PHP-script in line %d\n", yylineno); }
+\<\?([pP][hH][pP])?								{ BEGIN(PHP); printf("Found start PHP-script in line %d\n", yylineno); }
 <PHP>\?\>										{ BEGIN(INITIAL); printf("Found end PHP-script in line %d\n", yylineno); }
 <PHP><<EOF>>									{ BEGIN(INITIAL); printf("Found end PHP-script in line %d\n", yylineno); }
 
 <HTML_COMMENT,MULTILINE_COMMENT,BEGDOC,NOWDOC,HEREDOC,SINGLE_QUOTED_STRING,DOUBLE_QUOTED_STRING><<EOF>>			{ BEGIN(INITIAL); printf("ERROR! Unexpected end of file!"); }
 
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>const						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>class						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>extends						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>public						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>protected					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>private						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>new 						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>as							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>and							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>or							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>xor							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>break						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>continue					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>do							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>while						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>endwhile					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>for							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>endfor						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>foreach						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>endforeach					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>echo						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>if							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>elseif						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>else						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>endif						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>switch						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>case						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>default						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>endswitch						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>function					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>instanceof					{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>return						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>static						{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
-<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>var							{ printf("Found keyword \"%s\" in line %d\n", yytext, yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[cC][oO][nN][sS][tT]						{ printf("Found keyword \"const\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[cC][lL][aA][sS][sS]						{ printf("Found keyword \"class\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][xX][tT][eE][nN][dD][sS]				{ printf("Found keyword \"extends\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[pP][uU][bB][lL][iI][cC]					{ printf("Found keyword \"public\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[pP][rR][oO][tT][eE][cC][tT][eE][dD]		{ printf("Found keyword \"protected\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[pP][rR][iI][vV][aA][tT][eE]				{ printf("Found keyword \"private\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[nN][eE][wW]								{ printf("Found keyword \"new \" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[aA][sS]									{ printf("Found keyword \"as\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[aA][nN][dD]								{ printf("Found keyword \"and\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[oO][rR]									{ printf("Found keyword \"or\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[xX][oO][rR]								{ printf("Found keyword \"xor\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[bB][rR][eE][aA][kK]						{ printf("Found keyword \"break\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[cC][oO][nN][tT][iI][nN][uU][eE]			{ printf("Found keyword \"continue\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[dD][oO]									{ printf("Found keyword \"do\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[wW][hH][iI][lL][eE]						{ printf("Found keyword \"while\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][nN][dD][wW][hH][iI][lL][eE]			{ printf("Found keyword \"endwhile\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[fF][oO][rR]								{ printf("Found keyword \"for\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][nN][dD][fF][oO][rR]					{ printf("Found keyword \"endfor\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[fF][oO][rR][eE][aA][cC][hH]				{ printf("Found keyword \"foreach\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][nN][dD][fF][oO][rR][eE][aA][cC][hH]	{ printf("Found keyword \"endforeach\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][cC][hH][oO]							{ printf("Found keyword \"echo\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[iI][fF]									{ printf("Found keyword \"if\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][lL][sS][eE][iI][fF]					{ printf("Found keyword \"elseif\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][lL][sS][eE]							{ printf("Found keyword \"else\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][nN][dD][iI][fF]						{ printf("Found keyword \"endif\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[sS][wW][iI][tT][cC][hH]					{ printf("Found keyword \"switch\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[cC][aA][sS][eE]							{ printf("Found keyword \"case\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[dD][eE][fF][aA][uU][lL][tT]				{ printf("Found keyword \"default\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[eE][nN][dD][sS][wW][iI][tT][cC][hH]		{ printf("Found keyword \"endswitch\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[fF][uU][nN][cC][tT][iI][oO][nN]			{ printf("Found keyword \"function\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[iI][nN][sS][tT][aA][nN][cC][eE][oO][fF]	{ printf("Found keyword \"instanceof\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[rR][eE][tT][uU][rR][nN]					{ printf("Found keyword \"return\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[sS][tT][aA][tT][iI][cC]					{ printf("Found keyword \"static\" in line %d\n", yylineno); }
+<SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>[vV][aA][rR]								{ printf("Found keyword \"var\" in line %d\n", yylineno); }
+
 
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"++"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <SIMPLE_SQUARE_BRACKETS,HARD_COMPLEX_INSERT,PHP>"--"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
