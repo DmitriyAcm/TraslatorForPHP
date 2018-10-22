@@ -81,8 +81,6 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <NOWDOC,HEREDOC>^{ID};\n			{
 										char check_end[1000] = "";
 										strncat(check_end, yytext, strcspn(yytext,";"));
-										check_end[strlen(check_end)] = '\0';
-										//yytext[strlen(yytext)-1] = '\0';
 										if (strcmp(check_end,stringID)==0)
 										{
 											BEGIN(PHP);
