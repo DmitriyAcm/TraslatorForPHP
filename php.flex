@@ -107,7 +107,8 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <DOUBLE_QUOTED_STRING,HEREDOC>\\\{					{ strcat(buf,"{"); }
 <DOUBLE_QUOTED_STRING,HEREDOC>\${ID}				{
 														int curline = yylineno;
-														printf("Found string literal\n\"%s\"\nfrom line %d to line %d\nFound operator \".\" in line %d\n", buf, s, curline, curline); 
+														printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, curline);
+														printf("Found operator \".\" in line %d\n", curline); 
 														buf[0]='\0';
 
 														printf("Found operator \"$\" in line %d\n",curline);
@@ -128,6 +129,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 														int curline = yylineno;
 														printf("Found symbol \"->\" in line %d\n",curline);
 														printf("Found identifier \"%s\" in line %d\n",yytext+2,curline);
+														printf("Found operator \".\" in line %d\n",yylineno);
 														BEGIN(cur_state);
 													}
 <SIMPLE_COMPLEX_INSERT>[-]						    { BEGIN(last_state); printf("Found operator \".\" in line %d\n", yylineno); strcat(buf,yytext); }
@@ -136,7 +138,8 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 														cur_complex_state = cur_state; 
 														cur_state = HARD_COMPLEX_INSERT; 
 														int curline = yylineno; 
-														printf("Found string literal\n\"%s\"\nfrom line %d to line %d\nFound operator \".\" in line %d\n", buf, s, curline, curline);
+														printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, curline);
+														printf("Found operator \".\" in line %d\n", curline);
 
 														printf("Found operator \"$\" in line %d\n", yylineno);
 
