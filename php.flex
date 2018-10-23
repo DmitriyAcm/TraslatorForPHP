@@ -52,6 +52,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 	
 	stackState[0] = INITIAL;
 	int nState = 0;
+	int cntBracket = 0;
 %}
 
 
@@ -124,7 +125,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SIMPLE_COMPLEX_INSERT>\[							{ 
 														printf("Found symbol \"[\" in line %d\n",yylineno);
 														
-														stackState[++nState] = PHP; 
+														stackState[++nState] = SIMPLE_SQUARE_BRACKETS; 
 														BEGIN(stackState[nState]);
 													}
 <SIMPLE_COMPLEX_INSERT>->{ID}						{
@@ -143,7 +144,6 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 														buf[0]='\0';
 
 														stackState[++nState] = HARD_COMPLEX_INSERT;
-														stackState[++nState] = PHP; 
 														BEGIN(stackState[nState]);
 													}
 <HARD_COMPLEX_INSERT>\}								{  }
@@ -219,49 +219,49 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <PHP>[vV][aA][rR]								{ printf("Found keyword \"var\" in line %d\n", yylineno); }
 
 
-<PHP>"++"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"--"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"!" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"*" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"*=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"**" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"**=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"/" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"/=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"%" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"+" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"+=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"." 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>".=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"++"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"--"						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"!" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"*" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"*=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"**" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"**=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"/" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"/=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"%" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"+" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"+=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"." 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>".=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <PHP>"," 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"-" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"-=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"<<" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>">>" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"<<=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>">>=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"<" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"<=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>">" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"-" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"-=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"<<" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>">>" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"<<=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>">>=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"<" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"<=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>">" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 <PHP>">=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"==" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"!=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"<>" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"===" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"!==" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"&&" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"||" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"$" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"==" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"!=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"<>" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"===" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"!==" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"&&" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"||" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"=" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"$" 						{ printf("Found operator \"%s\" in line %d\n", yytext, yylineno); }
 
 <PHP>";" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <PHP>":" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 <PHP>"?" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"(" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>")" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"{" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"}" 						{ 
-									if(stackState[nState-1] == HARD_COMPLEX_INSERT)
+<HARD_COMPLEX_INSERT,PHP>"(" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>")" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"{" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); cntBracket++;}
+<HARD_COMPLEX_INSERT,PHP>"}" 						{ 
+									if(stackState[nState] == HARD_COMPLEX_INSERT && cntBracket == 0)
 									{
 										printf("Found operator \".\" in line %d\n",  yylineno);
 
@@ -271,10 +271,14 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 									else 
 									{
 										printf("Found symbol \"%s\" in line %d\n", yytext, yylineno);
+										cntBracket--;
+										if(cntBracket < 0) {
+											printf("Error Brackets subs");
+										}
 									}
 								}
-<PHP>"["						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"]" 						{ 
+<HARD_COMPLEX_INSERT,PHP>"["						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP,SIMPLE_SQUARE_BRACKETS>"]" 						{ 
 									printf("Found symbol \"%s\" in line %d\n", yytext, yylineno);
 														
 									if(stackState[nState - 1] == SIMPLE_COMPLEX_INSERT){
@@ -284,21 +288,22 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 										BEGIN(stackState[--nState]);
 									}
 								}
-<PHP>"::" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"->"						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
-<PHP>"=>" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"::" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"->"						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>"=>" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
 
-<PHP>{TRUE}						{ printf("Found boolean value TRUE in line %d\n", yylineno); }
-<PHP>{FALSE}					{ printf("Found boolean value FALSE in line %d\n", yylineno); }
-<PHP>{NULL}						{ printf("Found value NULL in line %d\n", yylineno); }
-<PHP>{INT_10}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,10), yylineno); }
-<PHP>{INT_16}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,16), yylineno); }
-<PHP>{INT_8}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,8), yylineno); }
-<PHP>{INT_2}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext+2,NULL,2), yylineno); }
-<PHP>{FLOAT}					{ printf("Found float value %f in line %d\n", atof(yytext), yylineno); }
-<PHP>{EXPONENT}					{ printf("Found float value %f in line %d\n", atof(yytext), yylineno); }
-<PHP>{ID}						{ printf("Found identifier \"%s\" in line %d\n", yytext, yylineno); }
+<HARD_COMPLEX_INSERT,PHP>{TRUE}						{ printf("Found boolean value TRUE in line %d\n", yylineno); }
+<HARD_COMPLEX_INSERT,PHP>{FALSE}					{ printf("Found boolean value FALSE in line %d\n", yylineno); }
+<HARD_COMPLEX_INSERT,PHP>{NULL}						{ printf("Found value NULL in line %d\n", yylineno); }
+<HARD_COMPLEX_INSERT,PHP,SIMPLE_SQUARE_BRACKETS>{INT_10}				{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,10), yylineno); }
+<HARD_COMPLEX_INSERT,PHP,SIMPLE_SQUARE_BRACKETS>{INT_16}				{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,16), yylineno); }
+<HARD_COMPLEX_INSERT,PHP,SIMPLE_SQUARE_BRACKETS>{INT_8}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext,NULL,8), yylineno); }
+<HARD_COMPLEX_INSERT,PHP,SIMPLE_SQUARE_BRACKETS>{INT_2}					{ printf("Found int value %d in line %d\n", (int)strtol(yytext+2,NULL,2), yylineno); }
+<HARD_COMPLEX_INSERT,PHP>{FLOAT}					{ printf("Found float value %f in line %d\n", atof(yytext), yylineno); }
+<HARD_COMPLEX_INSERT,PHP>{EXPONENT}					{ printf("Found float value %f in line %d\n", atof(yytext), yylineno); }
+<HARD_COMPLEX_INSERT,PHP,SIMPLE_SQUARE_BRACKETS>{ID}						{ printf("Found identifier \"%s\" in line %d\n", yytext, yylineno); }
 
+<HARD_COMPLEX_INSERT,SIMPLE_SQUARE_BRACKETS>.		{ printf("Error simple insert %d\n", yylineno); }
 <INITIAL,PHP>[ \t\n]+			;
 <INITIAL>.*										;
 
