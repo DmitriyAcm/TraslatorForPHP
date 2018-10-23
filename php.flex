@@ -72,7 +72,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <SINGLE_QUOTED_STRING>\\\\     		{ strcat(buf, "\\"); }
 <SINGLE_QUOTED_STRING>\\[^\\\']     { strcat(buf, yytext); }
 <SINGLE_QUOTED_STRING>[^\\\']+		{ strcat(buf, yytext); }
-<SINGLE_QUOTED_STRING>\'			{ BEGIN(stackState[--nState]); printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
+<SINGLE_QUOTED_STRING>\'			{ BEGIN(stackState[--nState]); printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); buf[0]='\0'; }
 
 <PHP>"<<<"              			{ stackState[++nState] = BEGDOC; BEGIN(stackState[nState]); }
 <BEGDOC>[ \t]*            			;
@@ -89,6 +89,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 											buf[strlen(buf)-1] = '\0';
 											printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno);					
 											printf("Found symbol \";\" in line %d\n", yylineno);
+											buf[0] = '\0';
 										}
 										else
 										{
@@ -157,7 +158,7 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 <DOUBLE_QUOTED_STRING,HEREDOC>\\[0-7]{1,3}  		{ single_char_str[0]=(char)strtol(yytext+1,NULL,8); single_char_str[1] = '\0'; strcat(buf,single_char_str);}
 <DOUBLE_QUOTED_STRING,HEREDOC>\\x[0-9A-Fa-f]{1,2}   { single_char_str[0]=(char)strtol(yytext+2,NULL,16); single_char_str[1] = '\0'; strcat(buf,single_char_str);}
 <DOUBLE_QUOTED_STRING>\\\"			 				{ strcat(buf,"\""); }
-<DOUBLE_QUOTED_STRING>\"			 				{ BEGIN(stackState[--nState]); printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); }
+<DOUBLE_QUOTED_STRING>\"			 				{ BEGIN(stackState[--nState]); printf("Found string literal\n\"%s\"\nfrom line %d to line %d\n", buf, s, yylineno); buf[0]='\0'; }
 
 <DOUBLE_QUOTED_STRING,HEREDOC>\\					{ strcat(buf,"\\"); }
 <HEREDOC>\s.*										{ strcat(buf,yytext); }
@@ -277,10 +278,10 @@ EXPONENT	 	(({NUM}|{FLOAT})[eE][+-]?{NUM})
 									printf("Found symbol \"%s\" in line %d\n", yytext, yylineno);
 														
 									if(stackState[nState - 1] == SIMPLE_COMPLEX_INSERT){
-									printf("Found operator \".\" in line %d\n", yylineno);
+										printf("Found operator \".\" in line %d\n", yylineno);
 
-									--nState;
-									BEGIN(stackState[--nState]);
+										--nState;
+										BEGIN(stackState[--nState]);
 									}
 								}
 <PHP>"::" 						{ printf("Found symbol \"%s\" in line %d\n", yytext, yylineno); }
