@@ -2,8 +2,9 @@
 	#include "tree_structs.h"
 	#include <stdio.h>
 	#include <malloc.h>
-	void yyerror(char const *s);
 	extern int yylex(void);
+	
+	void yyerror(char const *s);
 	struct Program *createProgram(struct ProgramList *progList);
 	struct ProgramList *appendProgramToList(struct ProgramList *list, struct ProgramElement *elem);
 	struct ProgramList *createProgramList(struct ProgramElement *elem);
@@ -42,13 +43,13 @@
 	
 	struct WhileStatement *createWhile(enum WhileType type, struct Expression *condition, struct Statement *whileBlock, struct StatementList *altWhileBlock);
 	struct ForStatement *createFor(struct ExpressionList *initializer, struct ExpressionList *control, struct ExpressionList *endOfLoop, struct Statement *forBlock, struct StatementList *altForBlock);
-	struct ForeachStatement *createForeach(struct Expression *collection, struct Expression *foreachKey, struct Expression *foreachValue, struct Statement *foreachBlock, struct StatementList *altForeachBlock);
+	struct ForeachStatement *createForeach(struct Expression *collection, struct Expression *element, struct Statement *foreachBlock, struct StatementList *altForeachBlock);
 	
 
 	struct ClassDeclaration *createClass(char* className, char* classNameExtended, struct ClassMemberList *classMemberList);
 	struct ClassMemberList *appendClassMemberToList(struct ClassMemberList *list, struct ClassMember *classMember);
 	struct ClassMemberList *createClassMemberList(struct ClassMember *classMember);
-	struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessType aType, bool isStatic, struct VariablesList *constList, struct VariablesList *propList, struct FunctionDefinition *funcDef, struct FunctionHeader *abstractFuncDef);
+	struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessType aType, int isStatic, struct VariablesList *constList, struct VariablesList *propList, struct FunctionDefinition *funcDef, struct FunctionHeader *abstractFuncDef);
 	struct VariableElement *createVariable(char* type, char* name, struct Expression *value);	
 	struct VariablesList *appendVariableToList(struct VariablesList *list, struct VariableElement *constElement);
 	struct VariablesList *createVariablesList(enum VariableElementType type, struct VariableElement *constElement);
@@ -57,7 +58,7 @@
 	struct FunctionHeader *createFunctionHeader(char* name, struct VariablesList *parameters, char* type);
 	
 	
-	struct Program *prog;
+	struct Program *root;
 %}
 
 %union {
@@ -95,7 +96,7 @@
 %type <prog> program
 %type <progList> program_list
 %type <progElem> program_element
-%type <expr> expression
+%type <expr> expression expression_variable
 %type <exprList> expression_list
 %type <stmt> statement compound_statement expression_statement echo_statement return_statement jump_statement
 %type <stmtList> statement_list
@@ -113,7 +114,6 @@
 %type <classMember> class_member_declaration class_const_elements property_declaration method_declaration
 %type <varList> const_elements property_elements parameter_function_list
 %type <varElem> const_element property_element parameter_function
-
 %type <funcDef> function_definition
 %type <funcHead> function_definition_header
 
@@ -122,8 +122,8 @@
 %token <float_const> FLOAT
 %token <string_const> STRING
 %token <id_const> ID
+%token <type_const> TYPE
 %token NIL
-%token TYPE
 %token CONST
 %token CLASS
 %token EXTENDS
@@ -154,14 +154,11 @@
 %token RETURN
 %token STATIC
 %token VAR
-%token INCREMENT
-%token DECREMENT
 %token KEY_ACCESS
 %token PROPERTY_ACCESS
 %token STATIC_PROPERTY_ACCESS
 %token START_TAG
 %token END_TAG
-
 %left LOGIC_OR_2
 %left LOGIC_XOR
 %left LOGIC_AND_2
@@ -170,21 +167,24 @@
 %left LOGIC_AND_1
 %nonassoc EQUAL NOT_EQUAL_1 IDENTICALLY_EQUAL IDENTICALLY_NOT_EQUAL NOT_EQUAL_2
 %nonassoc '<' LESSER_EQUAL '>' GREATER_EQUAL
-%left LEFT_SHIFT RIGHT_SHIFT
 %left '+' '-' '.'
 %left '*' '/' '%'
 %right '!'
 %nonassoc INSTANCEOF
 %right UMINUS UPLUS
 %right POW
-%nonassoc ']'
-%nonassoc ')'
 %nonassoc NEW
+%left KEY_ACCESS
+%left '[' PROPERTY_ACCESS STATIC_PROPERTY_ACCESS
+%right '$'
+%nonassoc '(' 
+
 
 %%
 
-program : START_TAG program_list END_TAG	{ $$ = createProgram($2); }
-		| START_TAG END_TAG					{ $$ = createProgram(NULL); }
+program : START_TAG program_list END_TAG	{ $$ = root = createProgram($2); }
+		| START_TAG END_TAG					{ $$ = root = createProgram(NULL); }
+		| error								{ $$ = root = 0; }
 		;
 		
 program_list : program_element				{ $$ = createProgramList($1); }
@@ -192,8 +192,8 @@ program_list : program_element				{ $$ = createProgramList($1); }
 			 ;
 			 
 program_element : statement					{ $$ = createStatementElement($1); }
-				| function_definition		{ $$ = createClassDeclarationElement($1); }
-				| class_declaration			{ $$ = createFunctionDefinitionElement($1); }
+				| function_definition		{ $$ = createFunctionDefinitionElement($1); }
+				| class_declaration			{ $$ = createClassDeclarationElement($1); }
 				;
 
 expression : expression LOGIC_OR_2 expression				{ $$ = createExpression(ET_LOGIC_OR_2,$1,$3); }
@@ -215,28 +215,34 @@ expression : expression LOGIC_OR_2 expression				{ $$ = createExpression(ET_LOGI
 		   | expression '-' expression						{ $$ = createExpression(ET_MINUS,$1,$3); }
 		   | expression '.' expression						{ $$ = createExpression(ET_CONCAT,$1,$3); }
 		   | expression '*' expression						{ $$ = createExpression(ET_MULT,$1,$3); }
+		   | expression '%' expression						{ $$ = createExpression(ET_MOD,$1,$3); }
 		   | expression '/' expression						{ $$ = createExpression(ET_DIV,$1,$3); }
 		   | '!' expression									{ $$ = createExpression(ET_NOT,NULL,$2); }
 		   | '+' expression %prec UPLUS						{ $$ = createExpression(ET_PLUS,NULL,$2); }
 		   | '-' expression %prec UMINUS					{ $$ = createExpression(ET_MINUS,NULL,$2); }
-		   | expression INSTANCEOF expression				{ $$ = createExpression(ET_INSTANCEOF,$1,$3; }
+		   | expression INSTANCEOF expression				{ $$ = createExpression(ET_INSTANCEOF,$1,$3); }
 		   | expression POW expression						{ $$ = createExpression(ET_POW,$1,$3); }
 		   | expression PROPERTY_ACCESS expression			{ $$ = createExpression(ET_PROPERTY_ACCESS,$1,$3); }
 		   | expression STATIC_PROPERTY_ACCESS expression	{ $$ = createExpression(ET_STATIC_PROPERTY_ACCESS,$1,$3); }
-		   | '$' expression									{ $$ = createExpression(ET_DOLLAR,NULL,$2); }
+		   | '$' expression_variable						{ $$ = createExpression(ET_DOLLAR,NULL,$2); }
+		   | expression KEY_ACCESS expression				{ $$ = createExpression(ET_KEY_ACCESS,$1,$3); }
 		   | expression '[' expression ']'					{ $$ = createExpression(ET_ARRAY,$1,$3); }
 		   | expression '[' ']'								{ $$ = createExpression(ET_ARRAY,$1,NULL); }
 		   | '(' expression ')'								{ $$ = $2; }
 		   | expression '(' expression_list ')'				{ $$ = createExpressionWithRightList(ET_FUNCTION_CALL,$1,$3); }
 		   | expression '(' ')'								{ $$ = createExpressionWithRightList(ET_FUNCTION_CALL,$1,NULL); }
-		   | NEW expression									{  }
-		   | ID												{ $$ = createSimpleExpression(ET_ID,-1,-1,id_const)); }
-		   | INT											{ $$ = createSimpleExpression(ET_INT,int_const,-1,NULL)); }
-		   | FLOAT											{ $$ = createSimpleExpression(ET_FLOAT,-1,float_const,NULL)); }
-		   | STRING											{ $$ = createSimpleExpression(ET_STRING,-1,-1,string_const)); }
-		   | BOOL											{ $$ = createSimpleExpression(ET_BOOL,-1,-1,id_const)); }
-		   | NIL											{ $$ = createSimpleExpression(ET_NULL,-1,-1,NULL)); }
+		   | NEW expression									{ $$ = createExpression(ET_OBJECT_CREATION,$2,NULL); }
+		   | ID												{ $$ = createSimpleExpression(ET_ID,-1,-1,$1); }
+		   | INT											{ $$ = createSimpleExpression(ET_INT,$1,-1,NULL); }
+		   | FLOAT											{ $$ = createSimpleExpression(ET_FLOAT,-1,$1,NULL); }
+		   | STRING											{ $$ = createSimpleExpression(ET_STRING,-1,-1,$1); }
+		   | BOOL											{ $$ = createSimpleExpression(ET_BOOL,$1,-1,NULL); }
+		   | NIL											{ $$ = createSimpleExpression(ET_NULL,-1,-1,NULL); }
 		   ;
+		   
+expression_variable : '$' expression_variable				{ $$ = createExpression(ET_DOLLAR,NULL,$2); }
+					| ID									{ $$ = createSimpleExpression(ET_ID,-1,-1,$1); }
+					;
 				   
 expression_list : expression								{ $$ = createExpressionList($1); }
 				| expression_list ',' expression			{ $$ = appendExpressionToList($1,$3); }
@@ -253,6 +259,7 @@ statement : compound_statement		{ $$ = $1; }
 		  | echo_statement			{ $$ = $1; }
 		  | return_statement		{ $$ = $1; }
 		  | jump_statement			{ $$ = $1; }
+		  | ';'						{ $$ = NULL; }
 		  ;
 		  
 compound_statement : '{' statement_list '}'		{ $$ = createCompoundStatement($2); }
@@ -278,7 +285,7 @@ statement_list : statement					{ $$ = createStatementList($1); }
 				 
 			   
 while_statement : WHILE '(' expression ')' statement						{ $$ = createWhile(WT_WHILE,$3,$5,NULL); }
-				| WHILE '(' expression ')' ':' statement_list ENDWHILE ';'	{ $$ = createWhile(WT_WHILE,$3,$6); }
+				| WHILE '(' expression ')' ':' statement_list ENDWHILE ';'	{ $$ = createWhile(WT_WHILE,$3,NULL,$6); }
 				| DO statement WHILE '(' expression ')' ';'					{ $$ = createWhile(WT_DO_WHILE,$5,$2,NULL); }
 				;
 			 
@@ -300,10 +307,8 @@ for_statement : FOR '(' expression_list ';' expression_list ';' expression_list 
 			  | FOR '(' ';' ';' ')' ':' statement_list ENDFOR ';'													{ $$ = createFor(NULL,NULL,NULL,NULL,$7); }
 			  ;
 			   
-foreach_statement : FOREACH '(' expression AS expression ')' statement													{ $$ = createForeach($3,NULL,$5,$7,NULL); }
-				  | FOREACH '(' expression AS expression KEY_ACCESS expression ')' statement							{ $$ = createForeach($3,$5,$7,$9,NULL); }
-				  | FOREACH '(' expression AS expression ')' ':' statement_list ENDFOREACH ';'							{ $$ = createForeach($3,NULL,$5,NULL,$8); }
-				  | FOREACH '(' expression AS expression KEY_ACCESS expression ')' ':' statement_list ENDFOREACH ';'	{ $$ = createForeach($3,$5,$7,NULL,$10); }
+foreach_statement : FOREACH '(' expression AS expression ')' statement													{ $$ = createForeach($3,$5,$7,NULL); }
+				  | FOREACH '(' expression AS expression ')' ':' statement_list ENDFOREACH ';'							{ $$ = createForeach($3,$5,NULL,$8); }
 				  ;
 				  
 if_statement : IF '(' expression ')' statement elseif_statements_1 ELSE statement								{ $$ = createIf($3,$5,NULL,$6,$8,NULL); }
@@ -322,7 +327,6 @@ elseif_statements_1 : elseif_statement_1													{ $$ = createElseIfStatemen
 					
 elseif_statement_1 : ELSEIF '(' expression ')' statement								{ $$ = createElseIf($3,$5,NULL); }
 				   ;
-				   
 				 
 elseif_statements_2 : elseif_statement_2												{ $$ = createElseIfStatementList($1); }
 					| elseif_statements_2 elseif_statement_2							{ $$ = appendElseIfStatementToList($1,$2); }
@@ -354,26 +358,28 @@ case_statement : CASE expression ':' statement_list		{ $$ = createCase($2,$4); }
 function_definition : function_definition_header compound_statement					{ $$ = createFunctionDefinition($1,$2); }
 					;
 					
-function_definition_header : FUNCTION ID '(' parameter_function_list ')'			{ $$ = createFunctionHeader(id_const,$4,NULL); }
-						   | FUNCTION ID '(' parameter_function_list ')' ':' TYPE	{ $$ = createFunctionHeader(id_const,$4,type_const); }
-						   | FUNCTION ID '(' ')'									{ $$ = createFunctionHeader(id_const,NULL,NULL); }
-						   | FUNCTION ID '(' ')' ':' TYPE							{ $$ = createFunctionHeader(id_const,NULL,type_const); }
+function_definition_header : FUNCTION ID '(' parameter_function_list ')'			{ $$ = createFunctionHeader($2,$4,NULL); }
+						   | FUNCTION ID '(' parameter_function_list ')' ':' TYPE	{ $$ = createFunctionHeader($2,$4,$7); }
+						   | FUNCTION ID '(' ')'									{ $$ = createFunctionHeader($2,NULL,NULL); }
+						   | FUNCTION ID '(' ')' ':' TYPE							{ $$ = createFunctionHeader($2,NULL,$6); }
 						   ;
 					
 parameter_function_list : parameter_function										{ $$ = createVariablesList(VET_ARG,$1); }
 						| parameter_function_list ',' parameter_function			{ $$ = appendVariableToList($1,$3); }
 						;
 						
-parameter_function : '$' ID							{ $$ = createVariable(NULL,id_const,NULL); }
-				   | '$' ID '=' expression			{ $$ = createVariable(NULL,id_const,$4); }
-				   | TYPE '$' ID					{ $$ = createVariable(type_const,id_const,NULL); }
-				   | TYPE '$' ID '=' expression		{ $$ = createVariable(type_const,id_const,$5); }
+parameter_function : '$' ID							{ $$ = createVariable(NULL,$2,NULL); }
+				   | '$' ID '=' expression			{ $$ = createVariable(NULL,$2,$4); }
+				   | TYPE '$' ID					{ $$ = createVariable($1,$3,NULL); }
+				   | TYPE '$' ID '=' expression		{ $$ = createVariable($1,$3,$5); }
 				   ;
 				   
 
 
-class_declaration : CLASS ID '{' class_member_declarations '}'					{ $$ = createClass(id_const,NULL,$4); }
-				  | CLASS ID EXTENDS ID '{' class_member_declarations '}'		{ $$ = createClass(id_const,id_const,$6); }
+class_declaration : CLASS ID '{' class_member_declarations '}'					{ $$ = createClass($2,NULL,$4); }
+				  | CLASS ID '{' '}'											{ $$ = createClass($2,NULL,NULL); }
+				  | CLASS ID EXTENDS ID '{' class_member_declarations '}'		{ $$ = createClass($2,$4,$6); }
+				  | CLASS ID EXTENDS ID '{' '}'									{ $$ = createClass($2,$4,NULL); }
 				  ;
 
 class_member_declarations : class_member_declaration							{ $$ = createClassMemberList($1); }
@@ -385,61 +391,61 @@ class_member_declaration : class_const_elements	{ $$ = $1; }
 						 | method_declaration	{ $$ = $1; }
 						 ;
 
-class_const_elements : CONST const_elements ';'				{ $$ = createClassMember(CMT_CONST,AT_PUBLIC,false,$2,NULL,NULL,NULL); }
-					 | PUBLIC CONST const_elements ';'		{ $$ = createClassMember(CMT_CONST,AT_PUBLIC,false,$3,NULL,NULL,NULL); }
-					 | PROTECTED CONST const_elements ';'	{ $$ = createClassMember(CMT_CONST,AT_PROTECTED,false,$3,NULL,NULL,NULL); }
-					 | PRIVATE CONST const_elements ';'		{ $$ = createClassMember(CMT_CONST,AT_PRIVATE,false,$3,NULL,NULL,NULL); }
+class_const_elements : CONST const_elements ';'				{ $$ = createClassMember(CMT_CONST,AT_PUBLIC,0,$2,NULL,NULL,NULL); }
+					 | PUBLIC CONST const_elements ';'		{ $$ = createClassMember(CMT_CONST,AT_PUBLIC,0,$3,NULL,NULL,NULL); }
+					 | PROTECTED CONST const_elements ';'	{ $$ = createClassMember(CMT_CONST,AT_PROTECTED,0,$3,NULL,NULL,NULL); }
+					 | PRIVATE CONST const_elements ';'		{ $$ = createClassMember(CMT_CONST,AT_PRIVATE,0,$3,NULL,NULL,NULL); }
 					 ;
 
 const_elements : const_element								{ $$ = createVariablesList(VET_CONST,$1); }
 			   | const_elements ',' const_element			{ $$ = appendVariableToList($1,$3); }
 			   ;
 			   
-const_element : ID '=' expression							{ $$ = createVariable(NULL,id_const,$3); }
+const_element : ID '=' expression							{ $$ = createVariable(NULL,$1,$3); }
 			  ;
 			   
-property_declaration : VAR property_elements				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,false,NULL,$2,NULL,NULL); }
-					 | PUBLIC property_elements				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,false,NULL,$2,NULL,NULL); }
-					 | PROTECTED property_elements			{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,false,NULL,$2,NULL,NULL); }
-					 | PRIVATE property_elements			{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,false,NULL,$2,NULL,NULL); }
-					 | PUBLIC STATIC property_elements		{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,true,NULL,$3,NULL,NULL); }
-					 | PROTECTED STATIC property_elements	{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,true,NULL,$3,NULL,NULL); }
-					 | PRIVATE STATIC property_elements		{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,true,NULL,$3,NULL,NULL); }
-					 | STATIC property_elements				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,true,NULL,$2,NULL,NULL); }
-					 | STATIC PUBLIC property_elements		{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,true,NULL,$3,NULL,NULL); }
-					 | STATIC PROTECTED property_elements	{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,true,NULL,$3,NULL,NULL); }
-					 | STATIC PRIVATE property_elements		{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,true,NULL,$3,NULL,NULL); }
+property_declaration : VAR property_elements ';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,0,NULL,$2,NULL,NULL); }
+					 | PUBLIC property_elements	';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,0,NULL,$2,NULL,NULL); }
+					 | PROTECTED property_elements ';'			{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,0,NULL,$2,NULL,NULL); }
+					 | PRIVATE property_elements ';'			{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,0,NULL,$2,NULL,NULL); }
+					 | PUBLIC STATIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$3,NULL,NULL); }
+					 | PROTECTED STATIC property_elements ';'	{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,1,NULL,$3,NULL,NULL); }
+					 | PRIVATE STATIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,1,NULL,$3,NULL,NULL); }
+					 | STATIC property_elements ';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$2,NULL,NULL); }
+					 | STATIC PUBLIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$3,NULL,NULL); }
+					 | STATIC PROTECTED property_elements ';'	{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,1,NULL,$3,NULL,NULL); }
+					 | STATIC PRIVATE property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,1,NULL,$3,NULL,NULL); }
 					 ;
 					 
 property_elements : property_element						{ $$ = createVariablesList(VET_PROPERTY,$1); }
 				  | property_elements ',' property_element	{ $$ = appendVariableToList($1,$3); }
 				  ;
 				  
-property_element : '$' ID ';'					{ $$ = createVariable(NULL,id_const,NULL); }
-				 | '$' ID '=' expression ';'	{ $$ = createVariable(NULL,id_const,$4); }
+property_element : '$' ID					{ $$ = createVariable(NULL,$2,NULL); }
+				 | '$' ID '=' expression 	{ $$ = createVariable(NULL,$2,$4); }
 				 ;
 				
-method_declaration : function_definition								{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,false,NULL,NULL,$1,NULL); }
-				   | PUBLIC function_definition							{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,false,NULL,NULL,$2,NULL); }
-				   | PROTECTED function_definition						{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,false,NULL,NULL,$2,NULL); }
-				   | PRIVATE function_definition						{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,false,NULL,NULL,$2,NULL); }
-				   | PUBLIC STATIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,true,NULL,NULL,$3,NULL); }
-				   | PROTECTED STATIC function_definition				{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,true,NULL,NULL,$3,NULL); }
-				   | PRIVATE STATIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,true,NULL,NULL,$3,NULL); }
-				   | STATIC function_definition							{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,true,NULL,NULL,$2,NULL); }
-				   | STATIC PUBLIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,true,NULL,NULL,$3,NULL); }
-				   | STATIC PROTECTED function_definition				{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,true,NULL,NULL,$3,NULL); }
-				   | STATIC PRIVATE function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,true,NULL,NULL,$3,NULL); }
-				   | PUBLIC function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,false,NULL,NULL,NULL,$2); }
-				   | PROTECTED function_definition_header ';'			{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,false,NULL,NULL,NULL,$2); }
-				   | PRIVATE function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,false,NULL,NULL,NULL,$2); }
-				   | PUBLIC STATIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,true,NULL,NULL,NULL,$3); }
-				   | PROTECTED STATIC function_definition_header ';'	{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,true,NULL,NULL,NULL,$3); }
-				   | PRIVATE STATIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,true,NULL,NULL,NULL,$3); }
-				   | STATIC function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,true,NULL,NULL,NULL,$2); }
-				   | STATIC PUBLIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,true,NULL,NULL,NULL,$3); }
-				   | STATIC PROTECTED function_definition_header ';'	{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,true,NULL,NULL,NULL,$3); }
-				   | STATIC PRIVATE function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,true,NULL,NULL,NULL,$3); }
+method_declaration : function_definition								{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,0,NULL,NULL,$1,NULL); }
+				   | PUBLIC function_definition							{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,0,NULL,NULL,$2,NULL); }
+				   | PROTECTED function_definition						{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,0,NULL,NULL,$2,NULL); }
+				   | PRIVATE function_definition						{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,0,NULL,NULL,$2,NULL); }
+				   | PUBLIC STATIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$3,NULL); }
+				   | PROTECTED STATIC function_definition				{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,$3,NULL); }
+				   | PRIVATE STATIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,$3,NULL); }
+				   | STATIC function_definition							{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$2,NULL); }
+				   | STATIC PUBLIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$3,NULL); }
+				   | STATIC PROTECTED function_definition				{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,$3,NULL); }
+				   | STATIC PRIVATE function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,$3,NULL); }
+				   | PUBLIC function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,0,NULL,NULL,NULL,$2); }
+				   | PROTECTED function_definition_header ';'			{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,0,NULL,NULL,NULL,$2); }
+				   | PRIVATE function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,0,NULL,NULL,NULL,$2); }
+				   | PUBLIC STATIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,NULL,$3); }
+				   | PROTECTED STATIC function_definition_header ';'	{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,NULL,$3); }
+				   | PRIVATE STATIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,NULL,$3); }
+				   | STATIC function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,NULL,$2); }
+				   | STATIC PUBLIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,NULL,$3); }
+				   | STATIC PROTECTED function_definition_header ';'	{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,NULL,$3); }
+				   | STATIC PRIVATE function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,NULL,$3); }
 				   ;
 				
 				
@@ -453,12 +459,15 @@ void yyerror(char const *s)
 				
 struct Program *createProgram(struct ProgramList *progList)
 {
+	struct Program *result = (struct Program *)malloc(sizeof(struct Program));
+	result->progList = progList;
+	return result;
 }
 
 struct ProgramList *appendProgramToList(struct ProgramList *list, struct ProgramElement *elem)
 {
-	list->last->next = stmt;
-	list->last = stmt;
+	list->last->next = elem;
+	list->last = elem;
 	return list;
 }
 
@@ -610,12 +619,11 @@ struct ForStatement *createFor(struct ExpressionList *initializer, struct Expres
 	return result;
 }
 
-struct ForeachStatement *createForeach(struct Expression *collection, struct Expression *foreachKey, struct Expression *foreachValue, struct Statement *foreachBlock, struct StatementList *altForeachBlock)
+struct ForeachStatement *createForeach(struct Expression *collection, struct Expression *element, struct Statement *foreachBlock, struct StatementList *altForeachBlock)
 {
 	struct ForeachStatement *result = (struct ForeachStatement *)malloc(sizeof(struct ForeachStatement));
 	result->collection = collection;
-	result->foreachKey = foreachKey;
-	result->foreachValue = foreachValue;
+	result->element = element;
 	result->foreachBlock = foreachBlock;
 	result->altForeachBlock = altForeachBlock;
 	return result;
@@ -648,6 +656,7 @@ struct Expression *createSimpleExpression(enum ExpressionType type, int intValue
 	switch (type)
 	{
 		case ET_INT:
+		case ET_BOOL:
 			result->intValue = intValue;
 			break;
 		case ET_FLOAT:
@@ -680,7 +689,7 @@ struct ExpressionList *createExpressionList(struct Expression *expr)
 }
 
 
-struct IfStatement *createIf(struct Expression *condition, struct Statement *ifBlock, struct StatementList *altIfBlock, struct ElseIfStatements *elseIfBlock, struct Statement *elseBlock, struct StatementList *altElseBlock)
+struct IfStatement *createIf(struct Expression *condition, struct Statement *ifBlock, struct StatementList *altIfBlock, struct ElseIfStatementList *elseIfBlock, struct Statement *elseBlock, struct StatementList *altElseBlock)
 {
 	struct IfStatement *result = (struct IfStatement *)malloc(sizeof(struct IfStatement));
 	result->condition = condition;
@@ -782,7 +791,7 @@ struct ClassMemberList *createClassMemberList(struct ClassMember *classMember)
 	return result;
 }
 
-struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessType aType, bool isStatic, struct VariablesList *constList, struct VariablesList *propList, struct FunctionDefinition *funcDef, struct FunctionHeader *abstractFuncDef)
+struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessType aType, int isStatic, struct VariablesList *constList, struct VariablesList *propList, struct FunctionDefinition *funcDef, struct FunctionHeader *abstractFuncDef)
 {
 	struct ClassMember *result = (struct ClassMember *)malloc(sizeof(struct ClassMember));
 	result->cmType = cmType;
@@ -795,7 +804,7 @@ struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessTy
 	return result;
 }
 
-struct VariablesList *appendConstElementToList(struct VariablesList *list, struct VariableElement *constElement)
+struct VariablesList *appendVariableToList(struct VariablesList *list, struct VariableElement *constElement)
 {
 	list->last->next = constElement;
 	list->last = constElement;
