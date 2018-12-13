@@ -139,8 +139,7 @@ void doSemanticStatement(struct Statement* stmt) {
 
 void checkForeachElement(struct Expression* element) {
 	checkSimpleExpression(element);
-	if (element->type != ET_DOLLAR &&
-		element->type != ET_KEY_ACCESS) {
+	if (element->type != ET_DOLLAR) {
 			printf("parse error! incorrect foreach element values!\n");
 			root = NULL;
 			return;
