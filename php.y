@@ -49,7 +49,7 @@
 	struct ClassDeclaration *createClass(char* className, char* classNameExtended, struct ClassMemberList *classMemberList);
 	struct ClassMemberList *appendClassMemberToList(struct ClassMemberList *list, struct ClassMember *classMember);
 	struct ClassMemberList *createClassMemberList(struct ClassMember *classMember);
-	struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessType aType, int isStatic, struct VariablesList *constList, struct VariablesList *propList, struct FunctionDefinition *funcDef, struct FunctionHeader *abstractFuncDef);
+	struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessType aType, int isStatic, struct VariablesList *constList, struct VariablesList *propList, struct FunctionDefinition *funcDef);
 	struct VariableElement *createVariable(char* type, char* name, struct Expression *value);	
 	struct VariablesList *appendVariableToList(struct VariablesList *list, struct VariableElement *constElement);
 	struct VariablesList *createVariablesList(enum VariableElementType type, struct VariableElement *constElement);
@@ -391,10 +391,10 @@ class_member_declaration : class_const_elements	{ $$ = $1; }
 						 | method_declaration	{ $$ = $1; }
 						 ;
 
-class_const_elements : CONST const_elements ';'				{ $$ = createClassMember(CMT_CONST,AT_PUBLIC,0,$2,NULL,NULL,NULL); }
-					 | PUBLIC CONST const_elements ';'		{ $$ = createClassMember(CMT_CONST,AT_PUBLIC,0,$3,NULL,NULL,NULL); }
-					 | PROTECTED CONST const_elements ';'	{ $$ = createClassMember(CMT_CONST,AT_PROTECTED,0,$3,NULL,NULL,NULL); }
-					 | PRIVATE CONST const_elements ';'		{ $$ = createClassMember(CMT_CONST,AT_PRIVATE,0,$3,NULL,NULL,NULL); }
+class_const_elements : CONST const_elements ';'				{ $$ = createClassMember(CMT_CONST,AT_PUBLIC,0,$2,NULL,NULL); }
+					 | PUBLIC CONST const_elements ';'		{ $$ = createClassMember(CMT_CONST,AT_PUBLIC,0,$3,NULL,NULL); }
+					 | PROTECTED CONST const_elements ';'	{ $$ = createClassMember(CMT_CONST,AT_PROTECTED,0,$3,NULL,NULL); }
+					 | PRIVATE CONST const_elements ';'		{ $$ = createClassMember(CMT_CONST,AT_PRIVATE,0,$3,NULL,NULL); }
 					 ;
 
 const_elements : const_element								{ $$ = createVariablesList(VET_CONST,$1); }
@@ -404,17 +404,17 @@ const_elements : const_element								{ $$ = createVariablesList(VET_CONST,$1); 
 const_element : ID '=' expression							{ $$ = createVariable(NULL,$1,$3); }
 			  ;
 			   
-property_declaration : VAR property_elements ';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,0,NULL,$2,NULL,NULL); }
-					 | PUBLIC property_elements	';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,0,NULL,$2,NULL,NULL); }
-					 | PROTECTED property_elements ';'			{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,0,NULL,$2,NULL,NULL); }
-					 | PRIVATE property_elements ';'			{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,0,NULL,$2,NULL,NULL); }
-					 | PUBLIC STATIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$3,NULL,NULL); }
-					 | PROTECTED STATIC property_elements ';'	{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,1,NULL,$3,NULL,NULL); }
-					 | PRIVATE STATIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,1,NULL,$3,NULL,NULL); }
-					 | STATIC property_elements ';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$2,NULL,NULL); }
-					 | STATIC PUBLIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$3,NULL,NULL); }
-					 | STATIC PROTECTED property_elements ';'	{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,1,NULL,$3,NULL,NULL); }
-					 | STATIC PRIVATE property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,1,NULL,$3,NULL,NULL); }
+property_declaration : VAR property_elements ';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,0,NULL,$2,NULL); }
+					 | PUBLIC property_elements	';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,0,NULL,$2,NULL); }
+					 | PROTECTED property_elements ';'			{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,0,NULL,$2,NULL); }
+					 | PRIVATE property_elements ';'			{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,0,NULL,$2,NULL); }
+					 | PUBLIC STATIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$3,NULL); }
+					 | PROTECTED STATIC property_elements ';'	{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,1,NULL,$3,NULL); }
+					 | PRIVATE STATIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,1,NULL,$3,NULL); }
+					 | STATIC property_elements ';'				{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$2,NULL); }
+					 | STATIC PUBLIC property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PUBLIC,1,NULL,$3,NULL); }
+					 | STATIC PROTECTED property_elements ';'	{ $$ = createClassMember(CMT_PROPERTY,AT_PROTECTED,1,NULL,$3,NULL); }
+					 | STATIC PRIVATE property_elements ';'		{ $$ = createClassMember(CMT_PROPERTY,AT_PRIVATE,1,NULL,$3,NULL); }
 					 ;
 					 
 property_elements : property_element						{ $$ = createVariablesList(VET_PROPERTY,$1); }
@@ -425,27 +425,17 @@ property_element : '$' ID					{ $$ = createVariable(NULL,$2,NULL); }
 				 | '$' ID '=' expression 	{ $$ = createVariable(NULL,$2,$4); }
 				 ;
 				
-method_declaration : function_definition								{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,0,NULL,NULL,$1,NULL); }
-				   | PUBLIC function_definition							{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,0,NULL,NULL,$2,NULL); }
-				   | PROTECTED function_definition						{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,0,NULL,NULL,$2,NULL); }
-				   | PRIVATE function_definition						{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,0,NULL,NULL,$2,NULL); }
-				   | PUBLIC STATIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$3,NULL); }
-				   | PROTECTED STATIC function_definition				{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,$3,NULL); }
-				   | PRIVATE STATIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,$3,NULL); }
-				   | STATIC function_definition							{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$2,NULL); }
-				   | STATIC PUBLIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$3,NULL); }
-				   | STATIC PROTECTED function_definition				{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,$3,NULL); }
-				   | STATIC PRIVATE function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,$3,NULL); }
-				   | PUBLIC function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,0,NULL,NULL,NULL,$2); }
-				   | PROTECTED function_definition_header ';'			{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,0,NULL,NULL,NULL,$2); }
-				   | PRIVATE function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,0,NULL,NULL,NULL,$2); }
-				   | PUBLIC STATIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,NULL,$3); }
-				   | PROTECTED STATIC function_definition_header ';'	{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,NULL,$3); }
-				   | PRIVATE STATIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,NULL,$3); }
-				   | STATIC function_definition_header ';'				{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,NULL,$2); }
-				   | STATIC PUBLIC function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,NULL,$3); }
-				   | STATIC PROTECTED function_definition_header ';'	{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,NULL,$3); }
-				   | STATIC PRIVATE function_definition_header ';'		{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,NULL,$3); }
+method_declaration : function_definition								{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,0,NULL,NULL,$1); }
+				   | PUBLIC function_definition							{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,0,NULL,NULL,$2); }
+				   | PROTECTED function_definition						{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,0,NULL,NULL,$2); }
+				   | PRIVATE function_definition						{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,0,NULL,NULL,$2); }
+				   | PUBLIC STATIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$3); }
+				   | PROTECTED STATIC function_definition				{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,$3); }
+				   | PRIVATE STATIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,$3); }
+				   | STATIC function_definition							{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$2); }
+				   | STATIC PUBLIC function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PUBLIC,1,NULL,NULL,$3); }
+				   | STATIC PROTECTED function_definition				{ $$ = createClassMember(CMT_METHOD,AT_PROTECTED,1,NULL,NULL,$3); }
+				   | STATIC PRIVATE function_definition					{ $$ = createClassMember(CMT_METHOD,AT_PRIVATE,1,NULL,NULL,$3); }
 				   ;
 				
 				
@@ -467,6 +457,7 @@ struct Program *createProgram(struct ProgramList *progList)
 struct ProgramList *appendProgramToList(struct ProgramList *list, struct ProgramElement *elem)
 {
 	list->last->next = elem;
+	list->last->next->next = NULL;
 	list->last = elem;
 	return list;
 }
@@ -475,6 +466,7 @@ struct ProgramList *createProgramList(struct ProgramElement *elem)
 {
 	struct ProgramList *result = (struct ProgramList *)malloc(sizeof(struct ProgramList));
 	result->first = elem;
+	result->first->next = NULL;
 	result->last = elem;
 	return result;
 }
@@ -507,6 +499,7 @@ struct ProgramElement *createFunctionDefinitionElement(struct FunctionDefinition
 struct StatementList *appendStatementToList(struct StatementList *list, struct Statement *stmt)
 {
 	list->last->next = stmt;
+	list->last->next->next = NULL;
 	list->last = stmt;
 	return list;
 }
@@ -514,6 +507,7 @@ struct StatementList *createStatementList(struct Statement *stmt)
 {
 	struct StatementList *result = (struct StatementList *)malloc(sizeof(struct StatementList));
 	result->first = stmt;
+	result->first->next = NULL;
 	result->last = stmt;
 	return result;
 }
@@ -636,6 +630,7 @@ struct Expression *createExpression(enum ExpressionType type, struct Expression 
 	result->type = type;
 	result->left = left;
 	result->right = right;
+	result->rightExprList = NULL;
 	return result;
 }
 
@@ -644,6 +639,7 @@ struct Expression *createExpressionWithRightList(enum ExpressionType type, struc
 	struct Expression *result = (struct Expression *)malloc(sizeof(struct Expression));
 	result->type = type;
 	result->left = left;
+	result->right = NULL;
 	result->rightExprList = rightExprList;
 	return result;
 }
@@ -669,13 +665,16 @@ struct Expression *createSimpleExpression(enum ExpressionType type, int intValue
 		default:
 			break;
 	}
-	
+	result->left = NULL;
+	result->right = NULL;
+	result->rightExprList = NULL;
 	return result;
 }
 
 struct ExpressionList *appendExpressionToList(struct ExpressionList *list, struct Expression *expr)
 {
 	list->last->next = expr;
+	list->last->next->next = NULL;
 	list->last = expr;
 	return list;
 }
@@ -684,6 +683,7 @@ struct ExpressionList *createExpressionList(struct Expression *expr)
 {
 	struct ExpressionList *result = (struct ExpressionList *)malloc(sizeof(struct ExpressionList));
 	result->first = expr;
+	result->first->next = NULL;
 	result->last = expr;
 	return result;
 }
@@ -704,6 +704,7 @@ struct IfStatement *createIf(struct Expression *condition, struct Statement *ifB
 struct ElseIfStatementList *appendElseIfStatementToList(struct ElseIfStatementList *list, struct ElseIfStatement *elseIf)
 {
 	list->last->next = elseIf;
+	list->last->next->next = NULL;
 	list->last = elseIf;
 	return list;
 }
@@ -712,6 +713,7 @@ struct ElseIfStatementList *createElseIfStatementList(struct ElseIfStatement *el
 {
 	struct ElseIfStatementList *result = (struct ElseIfStatementList *)malloc(sizeof(struct ElseIfStatementList));
 	result->first = elseIf;
+	result->first->next = NULL;
 	result->last = elseIf;
 	return result;
 }
@@ -736,6 +738,7 @@ struct SwitchStatement *createSwitch(struct Expression *condition, struct CaseSt
 struct CaseStatements *appendCaseToList(struct CaseStatements *list, struct CaseStatement *caseStmt)
 {
 	list->last->next = caseStmt;
+	list->last->next->next = NULL;
 	list->last = caseStmt;
 	return list;
 }
@@ -744,6 +747,7 @@ struct CaseStatements *createCaseList(struct CaseStatement *caseStmt)
 {
 	struct CaseStatements *result = (struct CaseStatements *)malloc(sizeof(struct CaseStatements));
 	result->first = caseStmt;
+	result->first->next = NULL;
 	result->last = caseStmt;
 	return result;
 }
@@ -779,6 +783,7 @@ struct ClassDeclaration *createClass(char* className, char* classNameExtended, s
 struct ClassMemberList *appendClassMemberToList(struct ClassMemberList *list, struct ClassMember *classMember)
 {
 	list->last->next = classMember;
+	list->last->next->next = NULL;
 	list->last = classMember;
 	return list;
 }
@@ -787,11 +792,12 @@ struct ClassMemberList *createClassMemberList(struct ClassMember *classMember)
 {
 	struct ClassMemberList *result = (struct ClassMemberList *)malloc(sizeof(struct ClassMemberList));
 	result->first = classMember;
+	result->first->next = NULL;
 	result->last = classMember;
 	return result;
 }
 
-struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessType aType, int isStatic, struct VariablesList *constList, struct VariablesList *propList, struct FunctionDefinition *funcDef, struct FunctionHeader *abstractFuncDef)
+struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessType aType, int isStatic, struct VariablesList *constList, struct VariablesList *propList, struct FunctionDefinition *funcDef)
 {
 	struct ClassMember *result = (struct ClassMember *)malloc(sizeof(struct ClassMember));
 	result->cmType = cmType;
@@ -800,13 +806,13 @@ struct ClassMember *createClassMember(enum ClassMemberType cmType, enum AccessTy
 	result->constList = constList;
 	result->propList = propList;
 	result->funcDef = funcDef;
-	result->abstractFuncDef = abstractFuncDef;
 	return result;
 }
 
 struct VariablesList *appendVariableToList(struct VariablesList *list, struct VariableElement *constElement)
 {
 	list->last->next = constElement;
+	list->last->next->next = NULL;
 	list->last = constElement;
 	return list;
 }
