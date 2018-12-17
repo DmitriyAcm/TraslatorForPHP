@@ -1,0 +1,89 @@
+<Base>
+1 UTF8 --- <Base>
+2 CLASS --- 1
+3 UTF8 --- <init>
+4 UTF8 --- ()V
+5 NAME_AND_TYPE --- 3,4
+6 UTF8 --- java/lang/Object
+7 CLASS --- 6
+8 METHOD_REF --- 7,5
+9 UTF8 --- L<Base>
+10 UTF8 --- this
+11 UTF8 --- <main>
+12 UTF8 --- ([Ljava/lang/String;)V
+13 NAME_AND_TYPE --- 11,12
+14 METHOD_REF --- 2,13
+15 UTF8 --- [Ljava/lang/String;
+16 UTF8 --- args
+17 UTF8 --- g
+18 UTF8 --- <Object;>
+19 UTF8 --- aaaa
+20 UTF8 --- tyt
+21 UTF8 --- aaa
+22 UTF8 --- aaab
+23 UTF8 --- globs
+24 UTF8 --- (L<Object;>)L<Object;>
+25 NAME_AND_TYPE --- 23,24
+26 METHOD_REF --- 2,25
+27 UTF8 --- sar
+28 UTF8 --- gl2
+29 UTF8 --- ()L<Object;>
+30 NAME_AND_TYPE --- 28,29
+31 METHOD_REF --- 2,30
+f
+1 UTF8 --- f
+2 CLASS --- 1
+3 UTF8 --- Lf
+4 UTF8 --- this
+5 UTF8 --- func
+6 UTF8 --- (L<Object;>)L<Object;>
+7 NAME_AND_TYPE --- 5,6
+8 METHOD_REF --- 2,7
+9 UTF8 --- gets
+10 UTF8 --- <Object;>
+11 UTF8 --- art
+12 UTF8 --- g
+13 NAME_AND_TYPE --- 12,10
+14 FIELD_REF --- 2,13
+15 UTF8 --- sa
+16 NAME_AND_TYPE --- 15,10
+17 FIELD_REF --- 2,16
+18 NAME_AND_TYPE --- 1,10
+19 FIELD_REF --- 2,18
+gf
+1 UTF8 --- gf
+2 CLASS --- 1
+<Base>
+
+<init>
+
+0 this 10 9
+
+<main>
+
+0 args 16 15
+1 g 17 18
+2 aaaa 19 18
+3 tyt 20 18
+4 aaa 21 18
+5 aaab 22 18
+
+gl2
+
+0 this 10 9
+
+globs
+
+0 this 10 9
+1 sar 27 18
+
+f
+
+func
+
+0 this 4 3
+1 gets 9 10
+2 art 11 10
+
+gf
+
