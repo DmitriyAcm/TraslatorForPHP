@@ -127,7 +127,6 @@ enum ConstantType {
 	FLOAT
 };
 
-
 class PHPClass;
 
 struct PHPConstant {
@@ -540,8 +539,7 @@ void FillTables(Node* node) {
 			curClass->name = name;
 			curClass->pushConst(new PHPConstant(ConstantType::UTF8, new string("")));
 			curClass->pushConst(new PHPConstant(ConstantType::UTF8, new string("Code")));
-			curClass->pushConst(new PHPConstant(ConstantType::UTF8, new string(name)));
-			curClass->classConstantNumber = curClass->pushConst(new PHPConstant(ConstantType::CLASS, new int(curClass->classConstantNumber - 1)));
+			curClass->classConstantNumber = curClass->pushConst(new PHPConstant(ConstantType::CLASS, new int(curClass->pushConst(new PHPConstant(ConstantType::UTF8, new string(name))))));
 
 			FillListConstantTable(*it, curClass);
 
@@ -814,8 +812,7 @@ void main() {
 	
 	it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string("")));
 	it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string("Code")));
-	it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string(it->second->name)));
-	it->second->classConstantNumber = it->second->pushConst(new PHPConstant(ConstantType::CLASS, new int(it->second->classConstantNumber - 1)));
+	it->second->classConstantNumber = it->second->pushConst(new PHPConstant(ConstantType::CLASS, new int(it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string(it->second->name))))));
 
 	it->second->parent = it->second->pushConst(new PHPConstant(ConstantType::CLASS, new int(it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string("java/lang/Object"))))));
 
