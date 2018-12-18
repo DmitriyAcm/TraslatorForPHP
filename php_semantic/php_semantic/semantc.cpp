@@ -127,7 +127,8 @@ enum ConstantType {
 	FLOAT
 };
 
-struct PHPClass;
+
+class PHPClass;
 
 struct PHPConstant {
 	ConstantType type;
@@ -162,22 +163,8 @@ struct PHPConstant {
 		return false;
 	}
 
-	static PHPConstant* getConstant(const string& name, PHPClass* cls) {
-		ConstantType type;
-		
-		if (name[0] == '\'') {
-			
-			//cls->putRef("", , , , );
-
-			return new PHPConstant(ConstantType::STRING, new string(name));
-		} else if(name.find('.') != string::npos) {
-			return new PHPConstant(ConstantType::FLOAT, new float(atof(name.c_str())));
-		} else if(name[0] >= '0' && name[0] <= '9') {
-			return new PHPConstant(ConstantType::INT, new int(atoi(name.c_str())));
-		} else {
-			return new PHPConstant(ConstantType::UTF8, new string(name));
-		}
-	}
+public:
+	static PHPConstant* getConstant(const string& name, PHPClass* cls);
 };
 
 // echo $a, $b
@@ -200,7 +187,7 @@ struct PHPMethod {
 	Node* body;
 };
 
-struct PHPClass {
+class PHPClass {
 public:
 	string name;
 	int parent;
@@ -240,6 +227,26 @@ public:
 private:
 	map<PHPConstant, int> inTableConst;
 };
+
+PHPConstant* PHPConstant::getConstant(const string& name, PHPClass* cls) {
+	ConstantType type;
+
+	if (name[0] == '\'') {		
+		cls->putRef("<init>", "rtl/StringType", ConstantType::METHOD_REF, "(Ljava/lang/String;)V", ConstantType::UTF8);
+		return new PHPConstant(ConstantType::STRING, new string(name));
+
+	} else if(name.find('.') != string::npos) {
+		cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(D)V", ConstantType::UTF8);
+		return new PHPConstant(ConstantType::FLOAT, new float(atof(name.c_str())));
+
+	} else if(name[0] >= '0' && name[0] <= '9') {
+		cls->putRef("<init>", "rtl/IntType", ConstantType::METHOD_REF, "(I)V", ConstantType::UTF8);
+		return new PHPConstant(ConstantType::INT, new int(atoi(name.c_str())));
+
+	} else {
+		return new PHPConstant(ConstantType::UTF8, new string(name));
+	}
+}
 
 ////////
 //Fill table
@@ -402,7 +409,7 @@ private:
 			args.pb((*it)->child[0]->label);
 		}
 	}
-	
+
 	void tryNode(Node* node) {
 		if(node->label == CLAS) {
 			return;
@@ -493,9 +500,9 @@ void FillListConstantTable(Node* node, PHPClass* cls) {
 	if(node->child.empty()) {
 		if(node->label == "Expression List" || node->label == "Statement List" 
 			|| node->label == "Variable List" || node->label == "Class Member List") {
-			return;
+				return;
 		}
-
+		
 		PHPConstant* buf = PHPConstant::getConstant(node->label, cls);
 		if(buf->type != ConstantType::INT || *((int*)(buf->value)) > MAXINT) {
 			cls->pushConst(buf);
@@ -531,10 +538,10 @@ void FillTables(Node* node) {
 			phpClasses[name] = curClass;
 
 			curClass->name = name;
-			curClass->classConstantNumber = 2;
 			curClass->pushConst(new PHPConstant(ConstantType::UTF8, new string("")));
+			curClass->pushConst(new PHPConstant(ConstantType::UTF8, new string("Code")));
 			curClass->pushConst(new PHPConstant(ConstantType::UTF8, new string(name)));
-			curClass->pushConst(new PHPConstant(ConstantType::CLASS, new int(curClass->classConstantNumber - 1)));
+			curClass->classConstantNumber = curClass->pushConst(new PHPConstant(ConstantType::CLASS, new int(curClass->classConstantNumber - 1)));
 
 			FillListConstantTable(*it, curClass);
 
@@ -804,11 +811,11 @@ void main() {
 
 	auto it = --phpClasses.end();
 	it->second->name = nameClass;
-	it->second->classConstantNumber = 2;
-
+	
 	it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string("")));
+	it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string("Code")));
 	it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string(it->second->name)));
-	it->second->pushConst(new PHPConstant(ConstantType::CLASS, new int(it->second->classConstantNumber - 1)));
+	it->second->classConstantNumber = it->second->pushConst(new PHPConstant(ConstantType::CLASS, new int(it->second->classConstantNumber - 1)));
 
 	it->second->parent = it->second->pushConst(new PHPConstant(ConstantType::CLASS, new int(it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string("java/lang/Object"))))));
 
