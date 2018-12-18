@@ -777,7 +777,7 @@ void printMethods(PHPClass* phpClass, map<string, PHPMethod*>& methods) {
 void codeGeneration() {
 	
 	for (auto it = phpClasses.begin(); it != phpClasses.end(); ++it) {
-		freopen((it->first + ".class").c_str(), "w", stdout);
+		freopen((it->first + ".class").c_str(), "wt", stdout);
 		printMagic();
 		printBytes(get_u2(0));
 		printBytes(get_u2(52));
