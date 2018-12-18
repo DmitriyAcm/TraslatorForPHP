@@ -498,7 +498,8 @@ void FillListConstantTable(Node* node, PHPClass* cls) {
 
 	if(node->child.empty()) {
 		if(node->label == "Expression List" || node->label == "Statement List" 
-			|| node->label == "Variable List" || node->label == "Class Member List") {
+			|| node->label == "Variable List" || node->label == "Class Member List"
+			|| node->label == "Return") {
 				return;
 		}
 		
@@ -606,198 +607,6 @@ void FillTables(Node* node) {
 
 void prints();
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////	Code Generation	  //////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-union u2
-{
-	unsigned short number;
-	char bytes[2]; 
-};
-
-union u4
-{
-	unsigned long int number;
-	char bytes[4]; 
-};
-
-union s2
-{
-	short number;
-	char bytes[2]; 
-};
-
-union s4
-{
-	long int number;
-	char bytes[4]; 
-};
-
-vector <char> get_u2(unsigned short number) {
-	vector <char> result = vector<char>();
-	u2 data;
-	data.number = number;
-	result.push_back(data.bytes[1]);
-	result.push_back(data.bytes[0]);
-	return result;
-}
-
-vector <char> get_u4(unsigned long int number) {
-	vector <char> result = vector<char>();
-	u4 data;
-	data.number = number;
-	result.push_back(data.bytes[3]);
-	result.push_back(data.bytes[2]);
-	result.push_back(data.bytes[1]);
-	result.push_back(data.bytes[0]);
-	return result;
-}
-
-vector <char> get_s2(short number) {
-	vector <char> result = vector<char>();
-	s2 data;
-	data.number = number;
-	result.push_back(data.bytes[1]);
-	result.push_back(data.bytes[0]);
-	return result;
-}
-
-vector <char> get_s4(long int number) {
-	vector <char> result = vector<char>();
-	s4 data;
-	data.number = number;
-	result.push_back(data.bytes[3]);
-	result.push_back(data.bytes[2]);
-	result.push_back(data.bytes[1]);
-	result.push_back(data.bytes[0]);
-	return result;
-}
-
-void printString(string& str) {
-	const char* s = str.c_str();
-	int length = str.length();
-	for (int i = 0; i < length; ++i) {
-		cout << s[i];
-	}
-}
-
-void printMagic() {
-	printf("%c", 0xCA);
-	printf("%c", 0xFE);
-	printf("%c", 0xBA);
-	printf("%c", 0xBE);
-}
-
-void printBytes(vector<char> bytes) {
-	for (auto it = bytes.begin(); it != bytes.end(); ++it) {
-		printf("%c", (*it));
-	}
-}
-
-void printFlags() {
-	printf("%c", 0x00); 
-	printf("%c", 0x21); //PUBLIC //SUPER
-}
-
-void printTableConstant(vector<PHPConstant*>& tc) {
-	for (auto it = tc.begin(); it != tc.end(); ++it) {
-		int** data;
-		string str;
-		switch ((*it)->type) {
-		case ConstantType::UTF8:
-				printf("%c", 0x01);
-				str = *((string*)(*it)->value);
-				printBytes(get_u2(str.length()));
-				printString(str);
-				break;
-			case ConstantType::CLASS:
-				printf("%c", 0x07);
-				printBytes(get_u2(*((int*)(*it)->value)));
-				break;
-			case ConstantType::NAME_AND_TYPE:
-				printf("%c", 0x0C);
-				data = (int**)(*it)->value;
-				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*data+1)));
-				break;
-			case ConstantType::METHOD_REF:
-				printf("%c", 0x0A);
-				data = (int**)(*it)->value;
-				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*data+1)));
-				break;
-			case ConstantType::FIELD_REF:
-				printf("%c", 0x09);
-				data = (int**)(*it)->value;
-				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*data+1)));
-				break;
-		}
-	}
-}
-
-void printAccessFlags(PHPMethod* method) {
-	int res;
-	method->isStatic ? res = 0x08 : res = 0x00;
-	switch (method->accessLevel) {
-		case AccessLevel::PRIVATE:
-			res |= 0x02;
-			break;
-		case AccessLevel::PROTECTED:
-			res |= 0x04;
-			break;
-		case AccessLevel::PUBLIC:
-			res |= 0x01;
-			break;
-	}
-	printf("%c", 0x00);
-	printf("%c", res);
-}
-
-void printMethods(PHPClass* phpClass, map<string, PHPMethod*>& methods) {
-	for (auto it = methods.begin(); it != methods.end(); ++it) {
-		printAccessFlags(it->second);
-		int i = it->second->methodrefConstantNumber;
-		PHPConstant* mrconst = phpClass->constantTable.at(i);
-		int** datamr = (int**)mrconst->value;
-		PHPConstant* ntconst = phpClass->constantTable.at((int)*(datamr+1));
-		int** datant = (int**)ntconst->value;
-		printBytes(get_u2((int)*(datant)));
-		printBytes(get_u2((int)*(datant+1)));
-		printBytes(get_u2(1));
-	}
-}
-
-void codeGeneration() {
-	
-	for (auto it = phpClasses.begin(); it != phpClasses.end(); ++it) {
-		freopen((it->first + ".class").c_str(), "w", stdout);
-		printMagic();
-		printBytes(get_u2(0));
-		printBytes(get_u2(52));
-		printBytes(get_u2(phpClasses.size() + 1));
-		printTableConstant(it->second->constantTable);
-		printFlags();
-		printBytes(get_u2(it->second->classConstantNumber)); // this class
-		printBytes(get_u2(it->second->parent)); // parent class
-		printBytes(get_u2(0)); //interfaces
-		printBytes(get_u2(it->second->properties.size())); //fields
-		printBytes(get_u2(it->second->methods.size())); //methods
-		printMethods(it->second, it->second->methods);
-		printBytes(get_u2(0)); //attributes
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////	Code Generation	  //////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-
 void main() {
 	ParseTree tree("finalTree.dot");
 	Node* root = tree.parse();
@@ -841,8 +650,6 @@ void main() {
 	FillTables(root);
 
 	prints();
-
-	codeGeneration();
 }
 
 string toStr[] = { 
