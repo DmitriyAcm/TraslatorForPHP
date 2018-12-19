@@ -744,6 +744,18 @@ void printTableConstant(vector<PHPConstant*>& tc) {
 			printf("%c", 0x07);
 			printBytes(get_u2(*((int*)tc[i]->value)));
 			break;
+		case ConstantType::INT:
+			printf("%c", 0x03);
+			printBytes(get_s4(*((long int*)tc[i]->value)));
+			break;
+		case ConstantType::FLOAT:
+			printf("%c", 0x04);
+			printBytes(get_s4(*((long int*)tc[i]->value)));
+			break;
+		case ConstantType::STRING:
+			printf("%c", 0x08);
+			printBytes(get_u2(*((int*)tc[i]->value)));
+			break;
 		case ConstantType::NAME_AND_TYPE:
 			printf("%c", 0x0C);
 			data = (int**)tc[i]->value;
