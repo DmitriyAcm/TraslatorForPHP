@@ -395,7 +395,7 @@ private:
 		}
 
 		if(node->label == "Echo") {
-			curClass->putRef("echo", "rtl/IO", ConstantType::METHOD_REF, "([Ljava/lang/Object;)V", ConstantType::UTF8);
+			curClass->operators["echo"] = curClass->putRef("echo", "rtl/IO", ConstantType::METHOD_REF, "([Ljava/lang/Object;)V", ConstantType::UTF8);
 		}
 
 		if(node->label == "Function Call") {
@@ -404,12 +404,12 @@ private:
 			if(nameFunc == "array") {
 				genArray(node->child[1]);
 			} else if(nameFunc == "fgetc"){
-				curClass->putRef("getChar", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
+				curClass->operators["getChar"] = curClass->putRef("getChar", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
 			} else if(nameFunc == "fgets") {
-				curClass->putRef("getString", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
+				curClass->operators["getString"] = curClass->putRef("getString", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
 			} else {
 				// TODO надо исправить ___Base___ на класс, к которому относится данная функция.
-				curClass->putRef(nameFunc, "___Base___", ConstantType::METHOD_REF, getConstName(node->child[1]->child.size()), ConstantType::UTF8);
+				curClass->operators[nameFunc] = curClass->putRef(nameFunc, "___Base___", ConstantType::METHOD_REF, getConstName(node->child[1]->child.size()), ConstantType::UTF8);
 			}
 		}
 	}
@@ -800,139 +800,53 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body == NULL) {
 		return getDefaultConstructor();
 	}
-	if (body->label == "Program List") {
-		for (auto it = body->child.begin(); it != body->child.end(); ++it) {
-			vector<char> op = getBytecode(phpClass, method, (*it));
-			bytecode = append(bytecode, op);
-		}
-		bytecode = append(bytecode, returnVoid());
-		return bytecode;
-	}
-	if (body->label == "=") {
-		bytecode = getBytecode(phpClass, method, body->child[1]);
-		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
-		int pos = it - method->sequenceLocalVariables.begin();
-		bytecode = append(bytecode, astore(pos));
-		return bytecode;
+	bytecode.push_back(0xB1);
+	/*if (body->label == "=") {
+	bytecode = getBytecode(phpClass, method, body->child[1]);
+	auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
+	int pos = it - method->sequenceLocalVariables.begin();
+	bytecode = append(bytecode, astore(pos));
+	return bytecode;
 	}
 	if (body->label == "+") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___add___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == "-") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___sub___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == "*") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___mul___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == "/") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___div___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == "<") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___lesser___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == ">") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___greater___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == "<=") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___lesserEqual___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == ">=") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___greaterEqual___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == "==") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___equal___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
-	}
-	if (body->label == "!=") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> right = getBytecode(phpClass, method, body->child[1]);
-		bytecode = append(bytecode, right);
-		vector<char> iv = invokevirtual(phpClass->operators["___notEqual___"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
+	bytecode = getBytecode(phpClass, method, body->child[0]);
+	vector<char> right = getBytecode(phpClass, method, body->child[1]);
+	bytecode = append(bytecode, right);
+	vector<char> iv = invokevirtual(phpClass->operators["___add___"]);
+	bytecode = append(bytecode, iv);
+	return bytecode;
 	}
 	if (body->label.find("\'") != string::npos) {
-		bytecode = _new(phpClass->BaseType);
-		vector<char> d = dup();
-		bytecode = append(bytecode, d);
-		vector<char> ldcv = ldc(phpClass->liters[body->label]);
-		bytecode = append(bytecode, ldcv);
-		vector<char> iv = invokespecial(phpClass->operators["S<init>"]);
-		bytecode = append(bytecode, iv);
-		return bytecode;
+	bytecode = _new(phpClass->classConstantNumber);
+	vector<char> d = dup();
+	bytecode = append(bytecode, d);
+	pushIntConstant(1, true);
+	vector<char> iv = invokevirtual(phpClass->operators["S<init>"]);
+	bytecode = append(bytecode, iv);
+	return bytecode;
 	} else if (body->label.find(".") != string::npos) {
-		bytecode = _new(phpClass->BaseType);
-		vector<char> d = dup();
-		bytecode = append(bytecode, d);
-		vector<char> ldcv = ldc(phpClass->floats[body->label]);
-		bytecode = append(bytecode, ldcv);
-		vector<char> iv = invokespecial(phpClass->operators["D<init>"]);
-		bytecode = append(bytecode, iv);
+	bytecode = _new(phpClass->classConstantNumber);
+	vector<char> d = dup();
+	bytecode = append(bytecode, d);
+	pushIntConstant(1, true);
+	vector<char> iv = invokevirtual(phpClass->operators["D<init>"]);
+	bytecode = append(bytecode, iv);
 	} else if (body->label[0] >= '0' && body->label[0] <= '9') {
-		bytecode = _new(phpClass->BaseType);
-		vector<char> d = dup();
-		bytecode = append(bytecode, d);
-		int number = stoi(body->label);
-		vector<char> pint;
-		if (number >= -32768 && number <= 32767) {
-			pint = pushIntConstant(number);
-		} else {
-			pint = ldc(phpClass->interegs[body->label]);
-		}
-		bytecode = append(bytecode, pint);
-		vector<char> iv = invokespecial(phpClass->operators["I<init>"]);
-		bytecode = append(bytecode, iv);
+	printBytes(_new(phpClass->classConstantNumber));
+	printBytes(dup());
+	pushIntConstant(1, true);
+	invokevirtual(phpClass->operators["I<init>"]);
 	} else if (body->label == "$") {
-		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->label);
-		int pos = it - method->sequenceLocalVariables.begin();
-		vector<char> aloadByte = aload(pos);
-		bytecode = append(bytecode, aloadByte);
-		return bytecode;
-	} 
+	auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->label);
+	int pos = it - method->sequenceLocalVariables.begin();
+	vector<char> aloadByte = aload(pos);
+	bytecode.insert(
+	bytecode.end(),
+	std::make_move_iterator(aloadByte.begin()),
+	std::make_move_iterator(aloadByte.end())
+	);
+	return bytecode;
+	} */
 	return bytecode;
 	/* */
 }
