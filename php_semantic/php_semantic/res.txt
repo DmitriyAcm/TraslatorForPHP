@@ -24,19 +24,26 @@ ___Base___
 23 METHOD_REF --- 3,22
 24 UTF8 --- [Ljava/lang/String;
 25 UTF8 --- args
-26 UTF8 --- a
-27 UTF8 --- (I)V
-28 NAME_AND_TYPE --- 6,27
-29 UTF8 --- rtl/IntType
-30 CLASS --- 29
-31 METHOD_REF --- 30,28
-32 UTF8 --- b
-33 UTF8 --- echo
-34 UTF8 --- (Ljava/lang/Object;)V
-35 NAME_AND_TYPE --- 33,34
-36 UTF8 --- rtl/IO
-37 CLASS --- 36
-38 METHOD_REF --- 37,35
+26 UTF8 --- sss
+27 UTF8 --- fgets
+28 UTF8 --- STDIO
+29 UTF8 --- a
+30 UTF8 --- (I)V
+31 NAME_AND_TYPE --- 6,30
+32 UTF8 --- rtl/IntType
+33 CLASS --- 32
+34 METHOD_REF --- 33,31
+35 UTF8 --- b
+36 UTF8 --- getString
+37 UTF8 --- ()Ljava/lang/String;
+38 NAME_AND_TYPE --- 36,37
+39 UTF8 --- rtl/IO
+40 CLASS --- 39
+41 METHOD_REF --- 40,38
+42 UTF8 --- echo
+43 UTF8 --- (Ljava/lang/Object;)V
+44 NAME_AND_TYPE --- 42,43
+45 METHOD_REF --- 40,44
 
 ___Base___
 
@@ -47,14 +54,16 @@ ___Base___
 main
 
 0 args 25 24
-1 a 26 14
-2 b 32 14
+1 sss 26 14
+2 a 29 14
+3 b 35 14
 
 ////////////////////////////////////////////////////////////////////////////////////OPERATORS////////////////////////////////////////////////////////////////////////////////////
 ___Base___
 
-I<init> 31
+I<init> 34
 ___add___ 16
 ___mul___ 19
-echo 38
+echo 45
+getString 41
 

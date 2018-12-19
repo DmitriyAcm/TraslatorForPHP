@@ -917,7 +917,12 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		return bytecode;
 	}
 	if (body->label == "Function Call") {
-		//body->
+		string funcName = body->child[0]->child[0]->label;
+		if (funcName == "fgets") {
+			bytecode = append(bytecode, invokestatic(phpClass->operators["___getString___"]));
+		} else if (funcName == "fgetc") {
+			bytecode = append(bytecode, invokestatic(phpClass->operators["___getChar___"]));
+		}
 		return bytecode;
 	}
 	if (body->label.find("\'") != string::npos) {
