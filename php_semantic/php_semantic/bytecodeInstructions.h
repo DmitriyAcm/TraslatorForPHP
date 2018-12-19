@@ -98,47 +98,47 @@ vector<char> invokevirtual(int methodRef) {
 	return result;
 }
 
-vector<char> pushIntConstant(int value, bool isIntegerConst) {
+vector<char> ldc(int constant) {
 	vector<char> result = vector<char>();
-	
-	if (!isIntegerConst) {
-		switch(value) {
-		case -1:
-			result.push_back(0x2);
-			break;
-		case 0:
-			result.push_back(0x3);
-			break;
-		case 1:
-			result.push_back(0x4);
-			break;
-		case 2:
-			result.push_back(0x5);
-			break;
-		case 3:
-			result.push_back(0x6);
-			break;
-		case 4:
-			result.push_back(0x7);
-			break;
-		case 5:
-			result.push_back(0x8);
-			break;
-		default:
-			if (value >= -128 && value <= 127) {
-				result.push_back(0x10);
-				result.push_back(value);
-			} else if (value >= -32768 && value <= 32767) {
-				result.push_back(0x11);
-				result.push_back(value);
-			}
-			break;
-		}
-	} else {
-		result.push_back(0x12);
-		result.push_back(value);
-	}
+	result.push_back(0x12);
+	result.push_back(constant);
+	return result;
+}
 
+vector<char> pushIntConstant(int value) {
+	vector<char> result = vector<char>();
+	switch(value) {
+	case -1:
+		result.push_back(0x2);
+		break;
+	case 0:
+		result.push_back(0x3);
+		break;
+	case 1:
+		result.push_back(0x4);
+		break;
+	case 2:
+		result.push_back(0x5);
+		break;
+	case 3:
+		result.push_back(0x6);
+		break;
+	case 4:
+		result.push_back(0x7);
+		break;
+	case 5:
+		result.push_back(0x8);
+		break;
+	default:
+		if (value >= -128 && value <= 127) {
+			result.push_back(0x10);
+			result.push_back(value);
+		} else if (value >= -32768 && value <= 32767) {
+			result.push_back(0x11);
+			result.push_back(value);
+		}
+		break;
+	}
 	return result;
 }
 

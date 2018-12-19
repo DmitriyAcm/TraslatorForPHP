@@ -9,127 +9,23 @@ ___Base___
 8 NAME_AND_TYPE --- 6,7
 9 METHOD_REF --- 5,8
 10 UTF8 --- this
-11 UTF8 --- ___lesser___
-12 UTF8 --- (Ljava/lang/Object;)Z
+11 UTF8 --- ___add___
+12 UTF8 --- (Ljava/lang/Object;)Lrtl/BaseType;
 13 NAME_AND_TYPE --- 11,12
 14 UTF8 --- rtl/BaseType;
 15 CLASS --- 14
 16 METHOD_REF --- 15,13
-17 UTF8 --- ___add___
-18 UTF8 --- (Ljava/lang/Object;)Lrtl/BaseType;
+17 UTF8 --- main
+18 UTF8 --- ([Ljava/lang/String;)V
 19 NAME_AND_TYPE --- 17,18
-20 METHOD_REF --- 15,19
-21 UTF8 --- ___mul___
-22 NAME_AND_TYPE --- 21,18
-23 METHOD_REF --- 15,22
-24 UTF8 --- ___div___
-25 NAME_AND_TYPE --- 24,18
-26 METHOD_REF --- 15,25
-27 UTF8 --- main
-28 UTF8 --- ([Ljava/lang/String;)V
-29 NAME_AND_TYPE --- 27,28
-30 METHOD_REF --- 3,29
-31 UTF8 --- [Ljava/lang/String;
-32 UTF8 --- args
-33 UTF8 --- fgets
-34 UTF8 --- STDIO
-35 UTF8 --- f
-36 UTF8 --- array
-37 UTF8 --- (I)V
-38 NAME_AND_TYPE --- 6,37
-39 UTF8 --- rtl/IntType
-40 CLASS --- 39
-41 METHOD_REF --- 40,38
-42 UTF8 --- item
-43 UTF8 --- globs
-44 UTF8 --- sar
-45 UTF8 --- gl2
-46 UTF8 --- g
-47 UTF8 --- (Ljava/lang/String;)V
-48 NAME_AND_TYPE --- 6,47
-49 UTF8 --- rtl/StringType
-50 CLASS --- 49
-51 METHOD_REF --- 50,48
-52 UTF8 --- 'hhhhhhhhh'
-53 STRING --- 52
-54 UTF8 --- tyt
-55 INT --- 1000000
-56 UTF8 --- fsas
-57 UTF8 --- (D)V
-58 NAME_AND_TYPE --- 6,57
-59 UTF8 --- rtl/FloatType
-60 CLASS --- 59
-61 METHOD_REF --- 60,58
-62 FLOAT --- 1.555
-63 UTF8 --- aaaa
-64 UTF8 --- aaa
-65 UTF8 --- Break
-66 UTF8 --- aaab
-67 UTF8 --- rtl/BaseType
-68 UTF8 --- (Lrtl/BaseType;)Ljava/lang/Object;
-69 NAME_AND_TYPE --- 43,68
-70 METHOD_REF --- 3,69
-71 UTF8 --- ()Ljava/lang/Object;
-72 NAME_AND_TYPE --- 45,71
-73 METHOD_REF --- 3,72
-f
-1 UTF8 --- Code
-2 UTF8 --- f
-3 CLASS --- 2
-4 UTF8 --- java/lang/Object
-5 CLASS --- 4
-6 UTF8 --- g
-7 CLASS --- 6
-8 UTF8 --- <init>
-9 UTF8 --- (Ljava/lang/String;)V
-10 NAME_AND_TYPE --- 8,9
-11 UTF8 --- rtl/StringType
-12 CLASS --- 11
-13 METHOD_REF --- 12,10
-14 UTF8 --- 'lol'
-15 STRING --- 14
-16 UTF8 --- sa
-17 UTF8 --- 'a'
-18 STRING --- 17
-19 UTF8 --- func
-20 UTF8 --- gets
-21 UTF8 --- art
-22 UTF8 --- 'em'
-23 STRING --- 22
-24 UTF8 --- fg
-25 UTF8 --- 'g'
-26 STRING --- 25
-27 UTF8 --- ___add___
-28 UTF8 --- (Ljava/lang/Object;)Lrtl/BaseType;
-29 NAME_AND_TYPE --- 27,28
-30 UTF8 --- rtl/BaseType;
-31 CLASS --- 30
-32 METHOD_REF --- 31,29
-33 UTF8 --- this
-34 UTF8 --- (Lrtl/BaseType;)Ljava/lang/Object;
-35 NAME_AND_TYPE --- 19,34
-36 METHOD_REF --- 3,35
-37 UTF8 --- rtl/BaseType
-38 UTF8 --- ()V
-39 NAME_AND_TYPE --- 8,38
-40 METHOD_REF --- 5,39
-41 NAME_AND_TYPE --- 6,37
-42 FIELD_REF --- 3,41
-43 NAME_AND_TYPE --- 16,37
-44 FIELD_REF --- 3,43
-45 NAME_AND_TYPE --- 2,37
-46 FIELD_REF --- 3,45
-gf
-1 UTF8 --- Code
-2 UTF8 --- gf
-3 CLASS --- 2
-4 UTF8 --- java/lang/Object
-5 CLASS --- 4
-6 UTF8 --- <init>
-7 UTF8 --- ()V
-8 NAME_AND_TYPE --- 6,7
-9 METHOD_REF --- 5,8
-10 UTF8 --- this
+20 METHOD_REF --- 3,19
+21 UTF8 --- [Ljava/lang/String;
+22 UTF8 --- args
+23 UTF8 --- (I)V
+24 NAME_AND_TYPE --- 6,23
+25 UTF8 --- rtl/IntType
+26 CLASS --- 25
+27 METHOD_REF --- 26,24
 
 ___Base___
 
@@ -137,62 +33,13 @@ ___Base___
 
 0 this 10 2
 
-gl2
-
-0 this 10 2
-
-globs
-
-0 this 10 2
-1 sar 44 67
-
 main
 
-0 args 32 31
-1 f 35 67
-2 item 42 67
-3 g 46 67
-4 tyt 54 67
-5 fsas 56 67
-6 aaaa 63 67
-7 aaa 64 67
-8 aaab 66 67
-
-f
-
-<init>
-
-0 this 33 2
-
-func
-
-0 this 33 2
-1 gets 20 37
-2 art 21 37
-3 fg 24 37
-
-gf
-
-<init>
-
-0 this 10 2
+0 args 22 21
 
 ////////////////////////////////////////////////////////////////////////////////////OPERATORS////////////////////////////////////////////////////////////////////////////////////
 ___Base___
 
-D<init> 61
-I<init> 41
-S<init> 51
-___add___ 20
-___div___ 26
-___lesser___ 16
-___mul___ 23
-
-f
-
-S<init> 13
-___add___ 32
-
-gf
-
+I<init> 27
+___add___ 16
 

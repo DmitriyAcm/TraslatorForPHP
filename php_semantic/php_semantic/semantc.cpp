@@ -769,8 +769,15 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body == NULL) {
 		return getDefaultConstructor();
 	}
-	bytecode.push_back(0xB1);
-	/*if (body->label == "=") {
+	//bytecode.push_back(0xB1);
+	if (body->label == "Program List") {
+		for (auto it = body->child.begin(); it != body->child.end(); ++it) {
+			vector<char> op = getBytecode(phpClass, method, (*it));
+			bytecode = append(bytecode, op);
+		}
+		return bytecode;
+	}
+	if (body->label == "=") {
 		bytecode = getBytecode(phpClass, method, body->child[1]);
 		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
 		int pos = it - method->sequenceLocalVariables.begin();
@@ -778,7 +785,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		return bytecode;
 	}
 	if (body->label == "+") {
-		bytecode = getBytecode(phpClass, method, body->child[0]);
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		vector<char> right = getBytecode(phpClass, method, body->child[1]);
 		bytecode = append(bytecode, right);
 		vector<char> iv = invokevirtual(phpClass->operators["___add___"]);
@@ -789,33 +796,40 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = _new(phpClass->classConstantNumber);
 		vector<char> d = dup();
 		bytecode = append(bytecode, d);
-		pushIntConstant(1, true);
-		vector<char> iv = invokevirtual(phpClass->operators["S<init>"]);
+		vector<char> ldcv = ldc(phpClass->liters[body->label]);
+		bytecode = append(bytecode, ldcv);
+		vector<char> iv = invokespecial(phpClass->operators["S<init>"]);
 		bytecode = append(bytecode, iv);
 		return bytecode;
 	} else if (body->label.find(".") != string::npos) {
 		bytecode = _new(phpClass->classConstantNumber);
 		vector<char> d = dup();
 		bytecode = append(bytecode, d);
-		pushIntConstant(1, true);
-		vector<char> iv = invokevirtual(phpClass->operators["D<init>"]);
+		vector<char> ldcv = ldc(phpClass->floats[body->label]);
+		bytecode = append(bytecode, ldcv);
+		vector<char> iv = invokespecial(phpClass->operators["D<init>"]);
 		bytecode = append(bytecode, iv);
 	} else if (body->label[0] >= '0' && body->label[0] <= '9') {
-		printBytes(_new(phpClass->classConstantNumber));
-		printBytes(dup());
-		pushIntConstant(1, true);
-		invokevirtual(phpClass->operators["I<init>"]);
+		bytecode = _new(phpClass->classConstantNumber);
+		vector<char> d = dup();
+		bytecode = append(bytecode, d);
+		int number = stoi(body->label);
+		vector<char> pint;
+		if (number >= -32768 && number <= 32767) {
+			pint = pushIntConstant(number);
+		} else {
+			pint = ldc(phpClass->interegs[body->label]);
+		}
+		bytecode = append(bytecode, pint);
+		vector<char> iv = invokespecial(phpClass->operators["I<init>"]);
+		bytecode = append(bytecode, iv);
 	} else if (body->label == "$") {
 		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->label);
 		int pos = it - method->sequenceLocalVariables.begin();
 		vector<char> aloadByte = aload(pos);
-		bytecode.insert(
-			bytecode.end(),
-			std::make_move_iterator(aloadByte.begin()),
-			std::make_move_iterator(aloadByte.end())
-		);
+		bytecode = append(bytecode, aloadByte);
 		return bytecode;
-	} */
+	} 
 	return bytecode;
 	/* */
 }
