@@ -373,7 +373,9 @@ private:
 	PHPClass* curClass;
 
 	void genArray(Node* exprList) {
-
+		curClass->operators["___putkey___"] = curClass->putRef("___put___", "rtl/Array", ConstantType::METHOD_REF, "(Ljava/lang/String;Lrtl/BaseType;)V", ConstantType::UTF8);
+		curClass->operators["___put___"] = curClass->putRef("___put___", "rtl/Array", ConstantType::METHOD_REF, "(Lrtl/BaseType;)V", ConstantType::UTF8);
+		curClass->operators["___get___"] = curClass->putRef("___get___", "rtl/Array", ConstantType::METHOD_REF, "(Ljava/lang/String;)Lrtl/BaseType;", ConstantType::UTF8);
 	}
 
 	void tryNode(Node* node) {
@@ -401,7 +403,7 @@ private:
 		if(node->label == "Function Call") {
 			string nameFunc = node->child[0]->child[0]->label;
 
-			if(nameFunc == "array") {
+			if(nameFunc == "array" || nameFunc == "Array Element") {
 				genArray(node->child[1]);
 			} else if(nameFunc == "fgetc"){
 				curClass->operators["getChar"] = curClass->putRef("getChar", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
