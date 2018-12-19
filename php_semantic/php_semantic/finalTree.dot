@@ -1,15 +1,21 @@
 digraph G {
-node7 [label="Program"];
-node8 [label="Program List"];
-node7->node8 [label=""];
-node8->node9 [label="1"];
-node9 [label="="];
-node9->node10 [label="left"];
-node10 [label="$"];
-node10->node11 [label="right"];
-node11 [label="ID"];
-node11->node12 [label=""];
-node12 [label="a"];
-node9->node13 [label="right"];
-node13 [label="0"];
+node10 [label="Program"];
+node11 [label="Program List"];
+node10->node11 [label=""];
+node11->node12 [label="1"];
+node12 [label="+"];
+node12->node13 [label="left"];
+node13 [label="4"];
+node12->node14 [label="right"];
+node14 [label="3"];
+node11->node15 [label="2"];
+node15 [label="Echo"];
+node16 [label="Expression List"];
+node15->node16 [label=""];
+node16->node17 [label="1"];
+node17 [label="$"];
+node17->node18 [label="right"];
+node18 [label="ID"];
+node18->node19 [label=""];
+node19 [label="a"];
 }

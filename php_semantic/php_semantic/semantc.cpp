@@ -7,10 +7,16 @@
 #include <set>
 #include <iterator>
 
+#include "bytecodeInstructions.h"
+
 using namespace std;
 
 #define pb push_back
 #define mp make_pair
+
+//	BYTECODE	//
+
+//	BYTECODE	//
 
 const string OBJECT = "rtl/BaseType";
 const string FUNCT = "Function Definition";
@@ -615,70 +621,6 @@ void prints();
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-union u2
-{
-	unsigned short number;
-	char bytes[2]; 
-};
-
-union u4
-{
-	unsigned long int number;
-	char bytes[4]; 
-};
-
-union s2
-{
-	short number;
-	char bytes[2]; 
-};
-
-union s4
-{
-	long int number;
-	char bytes[4]; 
-};
-
-vector <char> get_u2(unsigned short number) {
-	vector <char> result = vector<char>();
-	u2 data;
-	data.number = number;
-	result.push_back(data.bytes[1]);
-	result.push_back(data.bytes[0]);
-	return result;
-}
-
-vector <char> get_u4(unsigned long int number) {
-	vector <char> result = vector<char>();
-	u4 data;
-	data.number = number;
-	result.push_back(data.bytes[3]);
-	result.push_back(data.bytes[2]);
-	result.push_back(data.bytes[1]);
-	result.push_back(data.bytes[0]);
-	return result;
-}
-
-vector <char> get_s2(short number) {
-	vector <char> result = vector<char>();
-	s2 data;
-	data.number = number;
-	result.push_back(data.bytes[1]);
-	result.push_back(data.bytes[0]);
-	return result;
-}
-
-vector <char> get_s4(long int number) {
-	vector <char> result = vector<char>();
-	s4 data;
-	data.number = number;
-	result.push_back(data.bytes[3]);
-	result.push_back(data.bytes[2]);
-	result.push_back(data.bytes[1]);
-	result.push_back(data.bytes[0]);
-	return result;
-}
-
 void printString(string& str) {
 	const char* s = str.c_str();
 	int length = str.length();
@@ -782,6 +724,11 @@ vector<char> getBytecode(Node* body) {
 		bytecode = getDefaultConstructor();
 	} else {
 		bytecode.push_back(0xB1);
+		if (body->label == "+") {
+			getBytecode(body->child.at(0));
+			getBytecode(body->child.at(1));
+			invokevirtual(1);
+		}
 	}
 	return bytecode;
 	/* */
