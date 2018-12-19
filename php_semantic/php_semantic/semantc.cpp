@@ -397,7 +397,7 @@ private:
 		}
 
 		if(node->label == "Echo") {
-			curClass->operators["echo"] = curClass->putRef("echo", "rtl/IO", ConstantType::METHOD_REF, "(Ljava/lang/Object;)V", ConstantType::UTF8);
+			curClass->operators["___echo___"] = curClass->putRef("echo", "rtl/IO", ConstantType::METHOD_REF, "(Ljava/lang/Object;)V", ConstantType::UTF8);
 		}
 
 		if(node->label == "Function Call") {
@@ -406,9 +406,9 @@ private:
 			if(nameFunc == "array" || nameFunc == "Array Element") {
 				genArray(node->child[1]);
 			} else if(nameFunc == "fgetc"){
-				curClass->operators["getChar"] = curClass->putRef("getChar", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
+				curClass->operators["___getChar___"] = curClass->putRef("getChar", "rtl/IO", ConstantType::METHOD_REF, "()Lrtl/BaseType;", ConstantType::UTF8);
 			} else if(nameFunc == "fgets") {
-				curClass->operators["getString"] = curClass->putRef("getString", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
+				curClass->operators["___getString___"] = curClass->putRef("getString", "rtl/IO", ConstantType::METHOD_REF, "()Lrtl/BaseType;", ConstantType::UTF8);
 			} else {
 				// TODO надо исправить ___Base___ на класс, к которому относится данная функция.
 				curClass->operators[nameFunc] = curClass->putRef(nameFunc, "___Base___", ConstantType::METHOD_REF, getConstName(node->child[1]->child.size()), ConstantType::UTF8);
