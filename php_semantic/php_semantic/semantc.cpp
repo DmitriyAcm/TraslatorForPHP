@@ -211,7 +211,10 @@ public:
 
 	int BaseType;
 	int pushConst(PHPConstant* cst) {
-
+		string cur = "";
+		if(cst->type == ConstantType::UTF8) {
+			cur = *((string*)cst->value);
+		}
 		if(inTableConst[*cst] == 0) {
 			constantTable.pb(cst);
 			inTableConst[*cst] = constantTable.size() - 1;
@@ -391,14 +394,22 @@ private:
 			tryNode(*it);
 		}
 
+		if(node->label == "Echo") {
+			curClass->putRef("echo", "rtl/IO", ConstantType::METHOD_REF, "([Ljava/lang/Object;)V", ConstantType::UTF8);
+		}
+
 		if(node->label == "Function Call") {
 			string nameFunc = node->child[0]->child[0]->label;
 
 			if(nameFunc == "array") {
 				genArray(node->child[1]);
+			} else if(nameFunc == "fgetc"){
+				curClass->putRef("getChar", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
+			} else if(nameFunc == "fgets") {
+				curClass->putRef("getString", "rtl/IO", ConstantType::METHOD_REF, "()Ljava/lang/String;", ConstantType::UTF8);
 			} else {
-				getConstName(node->child[1]->child.size());
-				//curClass->putRef(nameFunc, curClass->name, ConstantType::METHOD_REF, getConstName(args.size()), ConstantType::UTF8);
+				// TODO надо исправить ___Base___ на класс, к которому относится данная функция.
+				curClass->putRef(nameFunc, "___Base___", ConstantType::METHOD_REF, getConstName(node->child[1]->child.size()), ConstantType::UTF8);
 			}
 		}
 	}
@@ -419,8 +430,9 @@ public:
 	}
 
 	FinderParam(Node* node, PHPClass* cls, PHPMethod* mtd) {
-		tryNode(node);
 		curClass = cls;
+		tryNode(node);
+		
 		putField(mtd, cls, list);
 	}
 
