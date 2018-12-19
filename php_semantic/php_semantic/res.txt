@@ -32,7 +32,7 @@ ___Base___
 31 METHOD_REF --- 30,28
 32 UTF8 --- b
 33 UTF8 --- echo
-34 UTF8 --- ([Ljava/lang/Object;)V
+34 UTF8 --- (Ljava/lang/Object;)V
 35 NAME_AND_TYPE --- 33,34
 36 UTF8 --- rtl/IO
 37 CLASS --- 36
@@ -56,4 +56,5 @@ ___Base___
 I<init> 31
 ___add___ 16
 ___mul___ 19
+echo 38
 

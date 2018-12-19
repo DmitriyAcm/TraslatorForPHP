@@ -397,7 +397,7 @@ private:
 		}
 
 		if(node->label == "Echo") {
-			curClass->operators["echo"] = curClass->putRef("echo", "rtl/IO", ConstantType::METHOD_REF, "([Ljava/lang/Object;)V", ConstantType::UTF8);
+			curClass->operators["echo"] = curClass->putRef("echo", "rtl/IO", ConstantType::METHOD_REF, "(Ljava/lang/Object;)V", ConstantType::UTF8);
 		}
 
 		if(node->label == "Function Call") {
@@ -912,8 +912,12 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body->label == "Echo") {
 		for (auto it = body->child[0]->child.begin(); it != body->child[0]->child.end(); ++it) {
 			bytecode = append(bytecode, getBytecode(phpClass, method, (*it)));
-			bytecode = append(bytecode, invokestatic(phpClass->operators[""]));
+			bytecode = append(bytecode, invokestatic(phpClass->operators["echo"]));
 		}
+		return bytecode;
+	}
+	if (body->label == "Function Call") {
+		//body->
 		return bytecode;
 	}
 	if (body->label.find("\'") != string::npos) {
