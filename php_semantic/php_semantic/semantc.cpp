@@ -1,4 +1,4 @@
-#if 1
+п»ї#if 1
 #include <iostream>
 #include <string>
 #include <map>
@@ -206,8 +206,8 @@ public:
 	map<string, int> operators;
 	
 	map<string, int> liters;
-	map<int, int> interegs;
-	map<float, int> floats;
+	map<string, int> interegs;
+	map<string, int> floats;
 	int pushConst(PHPConstant* cst) {
 
 		if(inTableConst[*cst] == 0) {
@@ -344,7 +344,7 @@ class FinderParam {
 private:
 	vector<string> list;
 	set<string> pre;
-	// здесь должна быть принадлежность статическому полю
+	
 	void DefinitionVar(const string& str) {
 
 	}
@@ -365,6 +365,10 @@ private:
 
 		for(auto it = node->child.begin(); it != node->child.end(); ++it) {
 			tryNode(*it);
+		}
+
+		if(node->label == "Function Call") {
+			
 		}
 	}
 
@@ -538,13 +542,13 @@ void FillListConstantTable(Node* node, PHPClass* cls) {
 
 			switch (buf->type) {
 			case ConstantType::INT:
-				cls->interegs[*((int*)(buf->value))] = id;
+				cls->interegs[node->label] = id;
 				break;
 			case ConstantType::FLOAT:
-				cls->floats[*((float*)(buf->value))] = id;
+				cls->floats[node->label] = id;
 				break;
 			case ConstantType::STRING:
-				cls->liters[*((string*)(cls->constantTable[*((int*)(buf->value))]->value))] = id;
+				cls->liters[node->label] = id;
 				break;
 			}
 		}
@@ -819,7 +823,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 void printCode(PHPClass* phpClass, PHPMethod* method) {
 	printBytes(get_u2(1)); //"Code" const
 	vector<char> bc = getBytecode(phpClass, method, method->body);
-	//TODO длина атрибута
+	//TODO пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	printBytes(get_u4(2 + 2 + 4 + bc.size() + 2 + 2));
 	printBytes(get_u2(1000)); //stack_size
 	printBytes(get_u2(method->localVariables.size())); // local_vars_size
