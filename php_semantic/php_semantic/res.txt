@@ -35,6 +35,13 @@ ___Base___
 34 UTF8 --- rtl/IntType
 35 CLASS --- 34
 36 METHOD_REF --- 35,33
+37 UTF8 --- (Ljava/lang/String;)V
+38 NAME_AND_TYPE --- 6,37
+39 UTF8 --- rtl/StringType
+40 CLASS --- 39
+41 METHOD_REF --- 40,38
+42 UTF8 --- ffff
+43 STRING --- 42
 
 ___Base___
 
@@ -50,6 +57,7 @@ main
 ___Base___
 
 I<init> 36
+S<init> 41
 ___add___ 16
 ___div___ 22
 ___mul___ 25
