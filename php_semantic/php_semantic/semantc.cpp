@@ -742,11 +742,7 @@ vector<char> getDefaultConstructor() {
 	bytecode.push_back(0x2A);
 	bytecode.push_back(0xB7);
 	vector<char> invoke = get_u2(9);
-	bytecode.insert(
-		bytecode.end(),
-		std::make_move_iterator(invoke.begin()),
-		std::make_move_iterator(invoke.end())
-	);
+	bytecode = append(bytecode, invoke);
 	bytecode.push_back(0xB1);
 	return bytecode;
 }
@@ -757,8 +753,8 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body == NULL) {
 		return getDefaultConstructor();
 	}
-	//bytecode.push_back(0xB1);
-	if (body->label == "=") {
+	bytecode.push_back(0xB1);
+	/*if (body->label == "=") {
 		bytecode = getBytecode(phpClass, method, body->child[1]);
 		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
 		int pos = it - method->sequenceLocalVariables.begin();
@@ -776,19 +772,18 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body->label.find("\'") != string::npos) {
 		bytecode = _new(phpClass->classConstantNumber);
 		vector<char> d = dup();
-		bytecode.insert(
-			bytecode.end(),
-			std::make_move_iterator(d.begin()),
-			std::make_move_iterator(d.end())
-		);
+		bytecode = append(bytecode, d);
 		pushIntConstant(1, true);
-		invokevirtual(phpClass->operators["S<init>"]);
+		vector<char> iv = invokevirtual(phpClass->operators["S<init>"]);
+		bytecode = append(bytecode, iv);
 		return bytecode;
 	} else if (body->label.find(".") != string::npos) {
-		printBytes(_new(phpClass->classConstantNumber));
-		printBytes(dup());
+		bytecode = _new(phpClass->classConstantNumber);
+		vector<char> d = dup();
+		bytecode = append(bytecode, d);
 		pushIntConstant(1, true);
-		invokevirtual(phpClass->operators["D<init>"]);
+		vector<char> iv = invokevirtual(phpClass->operators["D<init>"]);
+		bytecode = append(bytecode, iv);
 	} else if (body->label[0] >= '0' && body->label[0] <= '9') {
 		printBytes(_new(phpClass->classConstantNumber));
 		printBytes(dup());
@@ -804,7 +799,8 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			std::make_move_iterator(aloadByte.end())
 		);
 		return bytecode;
-	} 
+	} */
+	return bytecode;
 	/* */
 }
 

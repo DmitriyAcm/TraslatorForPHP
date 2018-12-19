@@ -1,10 +1,10 @@
 #include <vector>
 #include "bytes.h"
 
-vector<char> append(vector<char>& left, vector<char>& right) {
-	vector<char> result = left;
+vector<char> append(vector<char> left, vector<char> right) {
+	vector<char> result(left);
 	result.insert(
-		right.end(),
+		result.end(),
 		std::make_move_iterator(right.begin()),
 		std::make_move_iterator(right.end())
 	);
