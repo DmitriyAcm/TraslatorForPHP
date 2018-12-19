@@ -12,20 +12,29 @@ ___Base___
 11 UTF8 --- ___add___
 12 UTF8 --- (Ljava/lang/Object;)Lrtl/BaseType;
 13 NAME_AND_TYPE --- 11,12
-14 UTF8 --- rtl/BaseType;
+14 UTF8 --- rtl/BaseType
 15 CLASS --- 14
 16 METHOD_REF --- 15,13
-17 UTF8 --- main
-18 UTF8 --- ([Ljava/lang/String;)V
-19 NAME_AND_TYPE --- 17,18
-20 METHOD_REF --- 3,19
-21 UTF8 --- [Ljava/lang/String;
-22 UTF8 --- args
-23 UTF8 --- (I)V
-24 NAME_AND_TYPE --- 6,23
-25 UTF8 --- rtl/IntType
-26 CLASS --- 25
-27 METHOD_REF --- 26,24
+17 UTF8 --- ___sub___
+18 NAME_AND_TYPE --- 17,12
+19 METHOD_REF --- 15,18
+20 UTF8 --- ___div___
+21 NAME_AND_TYPE --- 20,12
+22 METHOD_REF --- 15,21
+23 UTF8 --- ___mul___
+24 NAME_AND_TYPE --- 23,12
+25 METHOD_REF --- 15,24
+26 UTF8 --- main
+27 UTF8 --- ([Ljava/lang/String;)V
+28 NAME_AND_TYPE --- 26,27
+29 METHOD_REF --- 3,28
+30 UTF8 --- [Ljava/lang/String;
+31 UTF8 --- args
+32 UTF8 --- (I)V
+33 NAME_AND_TYPE --- 6,32
+34 UTF8 --- rtl/IntType
+35 CLASS --- 34
+36 METHOD_REF --- 35,33
 
 ___Base___
 
@@ -35,11 +44,14 @@ ___Base___
 
 main
 
-0 args 22 21
+0 args 31 30
 
 ////////////////////////////////////////////////////////////////////////////////////OPERATORS////////////////////////////////////////////////////////////////////////////////////
 ___Base___
 
-I<init> 27
+I<init> 36
 ___add___ 16
+___div___ 22
+___mul___ 25
+___sub___ 19
 
