@@ -822,7 +822,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	}
 	if (body->label == "=") {
 		bytecode = getBytecode(phpClass, method, body->child[1]);
-		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
+		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->child[0]->label);
 		int pos = it - method->sequenceLocalVariables.begin();
 		bytecode = append(bytecode, astore(pos));
 		return bytecode;
@@ -907,6 +907,13 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, iv);
 		return bytecode;
 	}
+	if (body->label == "Echo") {
+		for (auto it = body->child[0]->child.begin(); it != body->child[0]->child.end(); ++it) {
+			bytecode = append(bytecode, getBytecode(phpClass, method, (*it)));
+			bytecode = append(bytecode, invokestatic(phpClass->operators[""]));
+		}
+		return bytecode;
+	}
 	if (body->label.find("\'") != string::npos) {
 		bytecode = _new(phpClass->BaseType);
 		vector<char> d = dup();
@@ -939,7 +946,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		vector<char> iv = invokespecial(phpClass->operators["I<init>"]);
 		bytecode = append(bytecode, iv);
 	} else if (body->label == "$") {
-		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->label);
+		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
 		int pos = it - method->sequenceLocalVariables.begin();
 		vector<char> aloadByte = aload(pos);
 		bytecode = append(bytecode, aloadByte);
