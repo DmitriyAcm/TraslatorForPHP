@@ -201,6 +201,7 @@ public:
 	vector<PHPConstant*> constantTable;
 	map<string, PHPProperty*> properties;
 	map<string, PHPMethod*> methods;
+	map<string, int> operators;
 
 	int pushConst(PHPConstant* cst) {
 
@@ -237,16 +238,16 @@ private:
 PHPConstant* PHPConstant::getConstant(const string& name, PHPClass* cls) {
 	ConstantType type;
 
-	if (name[0] == '\'') {		
-		cls->putRef("<init>", "rtl/StringType", ConstantType::METHOD_REF, "(Ljava/lang/String;)V", ConstantType::UTF8);
+	if (name[0] == '\'') {
+		cls->operators["S<init>"] = cls->putRef("<init>", "rtl/StringType", ConstantType::METHOD_REF, "(Ljava/lang/String;)V", ConstantType::UTF8);
 		return new PHPConstant(ConstantType::STRING, new string(name));
 
 	} else if(name.find('.') != string::npos) {
-		cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(D)V", ConstantType::UTF8);
+		cls->operators["D<init>"] = cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(D)V", ConstantType::UTF8);
 		return new PHPConstant(ConstantType::FLOAT, new float(atof(name.c_str())));
 
 	} else if(name[0] >= '0' && name[0] <= '9') {
-		cls->putRef("<init>", "rtl/IntType", ConstantType::METHOD_REF, "(I)V", ConstantType::UTF8);
+		cls->operators["I<init>"] = cls->putRef("<init>", "rtl/IntType", ConstantType::METHOD_REF, "(I)V", ConstantType::UTF8);
 		return new PHPConstant(ConstantType::INT, new int(atoi(name.c_str())));
 
 	} else {
@@ -268,44 +269,60 @@ class FinderOper {
 			return;
 		}
 
+		int id = -1;
+		string name;
+
 		if(node->label == "+") {
-			curClass->putRef("add", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			name = "___add___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "-") {
-			curClass->putRef("sub", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			name = "___sub___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "*") {
-			curClass->putRef("mul", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			name = "___mul___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "/") {
-			curClass->putRef("div", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			name = "___div___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "<") {
-			curClass->putRef("lesser", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			name = "___lesser___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == ">") {
-			curClass->putRef("greater", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			name = "___greater___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == "<=") {
-			curClass->putRef("lesserEqual", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			name = "___lesserEqual___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == ">=") {
-			curClass->putRef("greaterEqual", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			name = "___greaterEqual___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == "==") {
-			curClass->putRef("equal", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			name = "___equal___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == "!=") {
-			curClass->putRef("notEqual", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			name = "___notEqual___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == ".") {
-			curClass->putRef("concat", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			name = "___concat___";
+			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "=") {
 			//curClass->putRef("concat", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		}
-
+		if(id != -1) {
+			curClass->operators[name] = id;
+		}
 		for(auto it = node->child.begin(); it != node->child.end(); ++it) {
 			tryNode(*it);
 		}
@@ -894,6 +911,16 @@ void prints() {
 			}
 			cout << endl;
 		}
+	}
+
+
+	cout << "////////////////////////////////////////////////////////////////////////////////////OPERATORS////////////////////////////////////////////////////////////////////////////////////" << endl;
+	for(auto it = phpClasses.begin(); it != phpClasses.end(); ++it) {
+		cout << it->first << endl << endl;
+		for(auto it1 = (*it).second->operators.begin(); it1 != (*it).second->operators.end(); ++it1) {
+			cout << it1->first  << " " << it1->second << endl;
+		}
+		cout << endl;
 	}
 }
 #endif
