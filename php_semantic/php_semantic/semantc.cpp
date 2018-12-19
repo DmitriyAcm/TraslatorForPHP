@@ -5,6 +5,7 @@
 #include <string.h>
 #include <vector>
 #include <set>
+#include <iterator>
 
 using namespace std;
 
