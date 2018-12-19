@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <iterator>
+#include <algorithm>
 
 #include "bytecodeInstructions.h"
 
@@ -734,26 +735,66 @@ vector<char> getDefaultConstructor() {
 	return bytecode;
 }
 
-vector<char> getBytecode(Node* body) {
+vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	/* */
 	vector<char> bytecode = vector<char>();
 	if (body == NULL) {
-		bytecode = getDefaultConstructor();
-	} else {
-		bytecode.push_back(0xB1);
-		if (body->label == "+") {
-			getBytecode(body->child.at(0));
-			getBytecode(body->child.at(1));
-			invokevirtual(1);
-		}
+		return getDefaultConstructor();
 	}
-	return bytecode;
+	//bytecode.push_back(0xB1);
+	if (body->label == "=") {
+		bytecode = getBytecode(phpClass, method, body->child[1]);
+		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
+		int pos = it - method->sequenceLocalVariables.begin();
+		bytecode = append(bytecode, astore(pos));
+		return bytecode;
+	}
+	if (body->label == "+") {
+		bytecode = getBytecode(phpClass, method, body->child[0]);
+		vector<char> right = getBytecode(phpClass, method, body->child[1]);
+		bytecode = append(bytecode, right);
+		vector<char> iv = invokevirtual(phpClass->operators["___add___"]);
+		bytecode = append(bytecode, iv);
+		return bytecode;
+	}
+	if (body->label.find("\'") != string::npos) {
+		bytecode = _new(phpClass->classConstantNumber);
+		vector<char> d = dup();
+		bytecode.insert(
+			bytecode.end(),
+			std::make_move_iterator(d.begin()),
+			std::make_move_iterator(d.end())
+		);
+		pushIntConstant(1, true);
+		invokevirtual(phpClass->operators["S<init>"]);
+		return bytecode;
+	} else if (body->label.find(".") != string::npos) {
+		printBytes(_new(phpClass->classConstantNumber));
+		printBytes(dup());
+		pushIntConstant(1, true);
+		invokevirtual(phpClass->operators["D<init>"]);
+	} else if (body->label[0] >= '0' && body->label[0] <= '9') {
+		printBytes(_new(phpClass->classConstantNumber));
+		printBytes(dup());
+		pushIntConstant(1, true);
+		invokevirtual(phpClass->operators["I<init>"]);
+	} else if (body->label == "$") {
+		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->label);
+		int pos = it - method->sequenceLocalVariables.begin();
+		vector<char> aloadByte = aload(pos);
+		bytecode.insert(
+			bytecode.end(),
+			std::make_move_iterator(aloadByte.begin()),
+			std::make_move_iterator(aloadByte.end())
+		);
+		return bytecode;
+	} 
 	/* */
 }
 
-void printCode(PHPMethod* method) {
+void printCode(PHPClass* phpClass, PHPMethod* method) {
 	printBytes(get_u2(1)); //"Code" const
-	vector<char> bc = getBytecode(method->body);
+	vector<char> bc = getBytecode(phpClass, method, method->body);
 	//TODO длина атрибута
 	printBytes(get_u4(2 + 2 + 4 + bc.size() + 2 + 2));
 	printBytes(get_u2(1000)); //stack_size
@@ -775,7 +816,7 @@ void printMethods(PHPClass* phpClass, map<string, PHPMethod*>& methods) {
 		printBytes(get_u2((int)*(datant))); //name_index
 		printBytes(get_u2((int)*(datant+1))); //descriptor_index
 		printBytes(get_u2(1)); //attributes_count
-		printCode(it->second);
+		printCode(phpClass, it->second);
 	}
 }
 

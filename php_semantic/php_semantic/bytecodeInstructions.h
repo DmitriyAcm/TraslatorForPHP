@@ -1,6 +1,16 @@
 #include <vector>
 #include "bytes.h"
 
+vector<char> append(vector<char>& left, vector<char>& right) {
+	vector<char> result = left;
+	result.insert(
+		right.end(),
+		std::make_move_iterator(right.begin()),
+		std::make_move_iterator(right.end())
+	);
+	return result;
+}
+
 vector<char> aload(int number) {
 	vector<char> result = vector<char>();
 	switch (number) {
@@ -53,11 +63,7 @@ vector<char> _new(int classConst) {
 	
 	result.push_back(0xBB);
 	vector<char> cc = get_u2(classConst);
-	result.insert(
-		result.end(),
-		std::make_move_iterator(cc.begin()),
-		std::make_move_iterator(cc.end())
-	);
+	result = append(result, cc);
 
 	return result;
 }
@@ -67,11 +73,7 @@ vector<char> invokespecial(int methodRef) {
 	
 	result.push_back(0xB7);
 	vector<char> mr = get_u2(methodRef);
-	result.insert(
-		result.end(),
-		std::make_move_iterator(mr.begin()),
-		std::make_move_iterator(mr.end())
-	);
+	result = append(result, mr);
 
 	return result;
 }
@@ -81,11 +83,7 @@ vector<char> invokestatic(int methodRef) {
 	
 	result.push_back(0xB8);
 	vector<char> mr = get_u2(methodRef);
-	result.insert(
-		result.end(),
-		std::make_move_iterator(mr.begin()),
-		std::make_move_iterator(mr.end())
-	);
+	result = append(result, mr);
 
 	return result;
 }
@@ -95,11 +93,7 @@ vector<char> invokevirtual(int methodRef) {
 	
 	result.push_back(0xB6);
 	vector<char> mr = get_u2(methodRef);
-	result.insert(
-		result.end(),
-		std::make_move_iterator(mr.begin()),
-		std::make_move_iterator(mr.end())
-	);
+	result = append(result, mr);
 
 	return result;
 }
@@ -153,11 +147,7 @@ vector<char> pushDoubleConstant(int doubleConstant) {
 	
 	result.push_back(0x14);
 	vector<char> dc = get_u2(doubleConstant);
-	result.insert(
-		result.end(),
-		std::make_move_iterator(dc.begin()),
-		std::make_move_iterator(dc.end())
-	);
+	result = append(result, dc);
 
 	return result;
 }
@@ -174,6 +164,13 @@ vector<char> returnRef() {
 	vector<char> result = vector<char>();
 	
 	result.push_back(0xB0);
+	return result;
+}
+
+vector<char> dup() {
+	vector<char> result = vector<char>();
+	
+	result.push_back(0x59);
 	return result;
 }
 
