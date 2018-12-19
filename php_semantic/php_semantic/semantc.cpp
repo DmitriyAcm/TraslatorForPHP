@@ -5,6 +5,7 @@
 #include <string.h>
 #include <vector>
 #include <set>
+#include <iterator>
 
 using namespace std;
 
@@ -607,8 +608,6 @@ void FillTables(Node* node) {
 
 void prints();
 
-<<<<<<< HEAD
-=======
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////	Code Generation	  //////////////////////////////////////////////////////////////
@@ -697,6 +696,7 @@ void printMagic() {
 
 void printBytes(vector<char> bytes) {
 	for (auto it = bytes.begin(); it != bytes.end(); ++it) {
+		char a = *it;
 		printf("%c", (*it));
 	}
 }
@@ -707,37 +707,37 @@ void printFlags() {
 }
 
 void printTableConstant(vector<PHPConstant*>& tc) {
-	for (auto it = tc.begin(); it != tc.end(); ++it) {
+	for (int i = 1; i < tc.size(); ++i) {
 		int** data;
 		string str;
-		switch ((*it)->type) {
+		switch (tc[i]->type) {
 		case ConstantType::UTF8:
 				printf("%c", 0x01);
-				str = *((string*)(*it)->value);
-				printBytes(get_u2(str.length()));
+				str = *((string*)(tc[i]->value));
+				printBytes(get_u2((unsigned short)str.length()));
 				printString(str);
 				break;
 			case ConstantType::CLASS:
 				printf("%c", 0x07);
-				printBytes(get_u2(*((int*)(*it)->value)));
+				printBytes(get_u2(*((int*)tc[i]->value)));
 				break;
 			case ConstantType::NAME_AND_TYPE:
 				printf("%c", 0x0C);
-				data = (int**)(*it)->value;
+				data = (int**)tc[i]->value;
 				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*data+1)));
+				printBytes(get_u2((int)(*(data+1))));
 				break;
 			case ConstantType::METHOD_REF:
 				printf("%c", 0x0A);
-				data = (int**)(*it)->value;
+				data = (int**)tc[i]->value;
 				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*data+1)));
+				printBytes(get_u2((int)(*(data+1))));
 				break;
 			case ConstantType::FIELD_REF:
 				printf("%c", 0x09);
-				data = (int**)(*it)->value;
+				data = (int**)tc[i]->value;
 				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*data+1)));
+				printBytes(get_u2((int)(*(data+1))));
 				break;
 		}
 	}
@@ -761,34 +761,73 @@ void printAccessFlags(PHPMethod* method) {
 	printf("%c", res);
 }
 
+vector<char> getDefaultConstructor() {
+	vector<char> bytecode = vector<char>();
+	bytecode.push_back(0x2A);
+	bytecode.push_back(0xB7);
+	vector<char> invoke = get_u2(9);
+	bytecode.insert(
+		bytecode.end(),
+		std::make_move_iterator(invoke.begin()),
+		std::make_move_iterator(invoke.end())
+	);
+	bytecode.push_back(0xB1);
+	return bytecode;
+}
+
+vector<char> getBytecode(Node* body) {
+	/* */
+	vector<char> bytecode = vector<char>();
+	if (body == NULL) {
+		bytecode = getDefaultConstructor();
+	} else {
+		bytecode.push_back(0xB1);
+	}
+	return bytecode;
+	/* */
+}
+
+void printCode(PHPMethod* method) {
+	printBytes(get_u2(1)); //"Code" const
+	vector<char> bc = getBytecode(method->body);
+	//TODO длина атрибута
+	printBytes(get_u4(2 + 2 + 4 + bc.size() + 2 + 2));
+	printBytes(get_u2(1000)); //stack_size
+	printBytes(get_u2(method->localVariables.size())); // local_vars_size
+	printBytes(get_u4(bc.size())); // local_vars_size
+	printBytes(bc); //bytecode
+	printBytes(get_u2(0)); //exceptions
+	printBytes(get_u2(0)); //attrs
+}
+
 void printMethods(PHPClass* phpClass, map<string, PHPMethod*>& methods) {
 	for (auto it = methods.begin(); it != methods.end(); ++it) {
-		printAccessFlags(it->second);
+		printAccessFlags(it->second); 
 		int i = it->second->methodrefConstantNumber;
 		PHPConstant* mrconst = phpClass->constantTable.at(i);
 		int** datamr = (int**)mrconst->value;
 		PHPConstant* ntconst = phpClass->constantTable.at((int)*(datamr+1));
 		int** datant = (int**)ntconst->value;
-		printBytes(get_u2((int)*(datant)));
-		printBytes(get_u2((int)*(datant+1)));
-		printBytes(get_u2(1));
+		printBytes(get_u2((int)*(datant))); //name_index
+		printBytes(get_u2((int)*(datant+1))); //descriptor_index
+		printBytes(get_u2(1)); //attributes_count
+		printCode(it->second);
 	}
 }
 
 void codeGeneration() {
-	
 	for (auto it = phpClasses.begin(); it != phpClasses.end(); ++it) {
-		freopen((it->first + ".class").c_str(), "wt", stdout);
+		freopen((it->first + ".class").c_str(), "wb", stdout);
 		printMagic();
 		printBytes(get_u2(0));
 		printBytes(get_u2(52));
-		printBytes(get_u2(phpClasses.size() + 1));
+		printBytes(get_u2(it->second->constantTable.size()));
 		printTableConstant(it->second->constantTable);
 		printFlags();
 		printBytes(get_u2(it->second->classConstantNumber)); // this class
 		printBytes(get_u2(it->second->parent)); // parent class
 		printBytes(get_u2(0)); //interfaces
-		printBytes(get_u2(it->second->properties.size())); //fields
+		printBytes(get_u2(0)); //fields
 		printBytes(get_u2(it->second->methods.size())); //methods
 		printMethods(it->second, it->second->methods);
 		printBytes(get_u2(0)); //attributes
@@ -801,7 +840,6 @@ void codeGeneration() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
->>>>>>> 7c1b7b980a86fd18d0377e239646e3bb79eb340b
 void main() {
 	ParseTree tree("finalTree.dot");
 	Node* root = tree.parse();
@@ -845,6 +883,8 @@ void main() {
 	FillTables(root);
 
 	prints();
+
+	codeGeneration();
 }
 
 string toStr[] = { 
