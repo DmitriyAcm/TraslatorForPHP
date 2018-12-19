@@ -245,7 +245,11 @@ PHPConstant* PHPConstant::getConstant(const string& name, PHPClass* cls) {
 
 	if (name[0] == '\'') {
 		cls->operators["S<init>"] = cls->putRef("<init>", "rtl/StringType", ConstantType::METHOD_REF, "(Ljava/lang/String;)V", ConstantType::UTF8);
-		return new PHPConstant(ConstantType::STRING, new int(cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(name)))));
+
+		string cur(name);
+		cur.pop_back();
+		cur.erase(0,1);
+		return new PHPConstant(ConstantType::STRING, new int(cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(cur)))));
 
 	} else if(name.find('.') != string::npos) {
 		cls->operators["D<init>"] = cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(D)V", ConstantType::UTF8);
@@ -344,9 +348,10 @@ class FinderParam {
 private:
 	vector<string> list;
 	set<string> pre;
-	
-	void DefinitionVar(const string& str) {
+	PHPClass* curClass;
 
+	void genArray(Node* exprList) {
+		
 	}
 
 	void tryNode(Node* node) {
@@ -368,7 +373,13 @@ private:
 		}
 
 		if(node->label == "Function Call") {
-			
+			string nameFunc = node->child[0]->child[0]->label;
+
+			if(nameFunc == "array") {
+				genArray(node->child[1]);
+			} else {
+				
+			}
 		}
 	}
 
@@ -390,6 +401,7 @@ public:
 
 	FinderParam(Node* node, PHPClass* cls, PHPMethod* mtd) {
 		tryNode(node);
+		curClass = cls;
 		putField(mtd, cls, list);
 	}
 
