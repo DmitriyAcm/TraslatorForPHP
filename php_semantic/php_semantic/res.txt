@@ -35,7 +35,7 @@ ___Base___
 34 METHOD_REF --- 33,31
 35 UTF8 --- b
 36 UTF8 --- getString
-37 UTF8 --- ()Ljava/lang/String;
+37 UTF8 --- ()Lrtl/BaseType;
 38 NAME_AND_TYPE --- 36,37
 39 UTF8 --- rtl/IO
 40 CLASS --- 39
@@ -63,7 +63,7 @@ ___Base___
 
 I<init> 34
 ___add___ 16
+___echo___ 45
+___getString___ 41
 ___mul___ 19
-echo 45
-getString 41
 

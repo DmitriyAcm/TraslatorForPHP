@@ -912,7 +912,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body->label == "Echo") {
 		for (auto it = body->child[0]->child.begin(); it != body->child[0]->child.end(); ++it) {
 			bytecode = append(bytecode, getBytecode(phpClass, method, (*it)));
-			bytecode = append(bytecode, invokestatic(phpClass->operators["echo"]));
+			bytecode = append(bytecode, invokestatic(phpClass->operators["___echo___"]));
 		}
 		return bytecode;
 	}
