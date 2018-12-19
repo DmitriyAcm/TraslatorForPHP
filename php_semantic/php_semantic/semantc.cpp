@@ -140,10 +140,11 @@ struct PHPConstant {
 		} else if(this1.type == other.type) {
 			switch (this1.type) {
 
-			case ConstantType::STRING:
+			
 			case ConstantType::UTF8:
 				return *((string*)((this1).value)) < *((string*)((other).value));
 
+			case ConstantType::STRING:
 			case ConstantType::INT:
 			case ConstantType::CLASS:
 				return *((int*)((this1).value)) < *((int*)((other).value));
@@ -196,7 +197,10 @@ public:
 	map<string, PHPProperty*> properties;
 	map<string, PHPMethod*> methods;
 	map<string, int> operators;
-
+	
+	map<string, int> liters;
+	map<int, int> interegs;
+	map<float, int> floats;
 	int pushConst(PHPConstant* cst) {
 
 		if(inTableConst[*cst] == 0) {
@@ -234,7 +238,7 @@ PHPConstant* PHPConstant::getConstant(const string& name, PHPClass* cls) {
 
 	if (name[0] == '\'') {
 		cls->operators["S<init>"] = cls->putRef("<init>", "rtl/StringType", ConstantType::METHOD_REF, "(Ljava/lang/String;)V", ConstantType::UTF8);
-		return new PHPConstant(ConstantType::STRING, new string(name));
+		return new PHPConstant(ConstantType::STRING, new int(cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(name)))));
 
 	} else if(name.find('.') != string::npos) {
 		cls->operators["D<init>"] = cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(D)V", ConstantType::UTF8);
@@ -523,7 +527,19 @@ void FillListConstantTable(Node* node, PHPClass* cls) {
 		
 		PHPConstant* buf = PHPConstant::getConstant(node->label, cls);
 		if(buf->type != ConstantType::INT || *((int*)(buf->value)) > MAXINT) {
-			cls->pushConst(buf);
+			int id = cls->pushConst(buf);
+
+			switch (buf->type) {
+			case ConstantType::INT:
+				cls->interegs[*((int*)(buf->value))] = id;
+				break;
+			case ConstantType::FLOAT:
+				cls->floats[*((float*)(buf->value))] = id;
+				break;
+			case ConstantType::STRING:
+				cls->liters[*((string*)(cls->constantTable[*((int*)(buf->value))]->value))] = id;
+				break;
+			}
 		}
 	}
 
@@ -931,11 +947,11 @@ void prints() {
 
 			switch ((*it1)->type) {
 
-			case ConstantType::STRING:
 			case ConstantType::UTF8:
 				cout << *((string*)((*it1)->value)) << endl;
 				break;
 
+			case ConstantType::STRING:
 			case ConstantType::INT:
 			case ConstantType::CLASS:
 				cout << *((int*)((*it1)->value)) << endl;
