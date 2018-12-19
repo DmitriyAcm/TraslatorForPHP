@@ -602,16 +602,7 @@ void GenDefaultConstructor(PHPClass* cls) {
 }
 
 void FindBaseType(PHPClass* curClass) {
-	int id = -1;
-
-	for(int i = 0; i < curClass->constantTable.size(); ++i) {
-		if(curClass->constantTable[i]->type == ConstantType::CLASS && *((string*)curClass->constantTable[(*(int*)curClass->constantTable[i]->value)]->value) == OBJECT) {
-			id = i;
-			break;
-		}	
-	}
-
-	curClass->BaseType = id;
+	curClass->BaseType = curClass->pushConst(new PHPConstant(ConstantType::CLASS, new int(curClass->pushConst(new PHPConstant(ConstantType::UTF8, new string(OBJECT) ) ) ) ) );
 }
 
 void FillTables(Node* node) {
