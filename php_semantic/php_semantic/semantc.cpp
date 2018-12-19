@@ -147,7 +147,7 @@ struct PHPConstant {
 		} else if(this1.type == other.type) {
 			switch (this1.type) {
 
-			
+
 			case ConstantType::UTF8:
 				return *((string*)((this1).value)) < *((string*)((other).value));
 
@@ -204,10 +204,12 @@ public:
 	map<string, PHPProperty*> properties;
 	map<string, PHPMethod*> methods;
 	map<string, int> operators;
-	
+
 	map<string, int> liters;
 	map<string, int> interegs;
 	map<string, int> floats;
+
+	int BaseType;
 	int pushConst(PHPConstant* cst) {
 
 		if(inTableConst[*cst] == 0) {
@@ -245,7 +247,11 @@ PHPConstant* PHPConstant::getConstant(const string& name, PHPClass* cls) {
 
 	if (name[0] == '\'') {
 		cls->operators["S<init>"] = cls->putRef("<init>", "rtl/StringType", ConstantType::METHOD_REF, "(Ljava/lang/String;)V", ConstantType::UTF8);
-		return new PHPConstant(ConstantType::STRING, new int(cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(name)))));
+
+		string cur(name);
+		cur.pop_back();
+		cur.erase(0,1);
+		return new PHPConstant(ConstantType::STRING, new int(cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(cur)))));
 
 	} else if(name.find('.') != string::npos) {
 		cls->operators["D<init>"] = cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(D)V", ConstantType::UTF8);
@@ -266,6 +272,23 @@ PHPConstant* PHPConstant::getConstant(const string& name, PHPClass* cls) {
 map<string, PHPClass*> phpClasses;
 ////////
 
+class FinderFunc;
+
+string getConstName(int col) {
+	string res;
+
+	res.pb('(');
+
+	while(col-- > 0) {
+		res += "Lrtl/BaseType;";
+	}
+	res.pb(')');
+
+	res += "Ljava/lang/Object;";
+
+	return res;
+}
+
 class FinderOper {
 	PHPClass* curClass;
 
@@ -279,50 +302,50 @@ class FinderOper {
 
 		if(node->label == "+") {
 			name = "___add___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "-") {
 			name = "___sub___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "*") {
 			name = "___mul___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "/") {
 			name = "___div___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "<") {
 			name = "___lesser___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == ">") {
 			name = "___greater___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == "<=") {
 			name = "___lesserEqual___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == ">=") {
 			name = "___greaterEqual___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == "==") {
 			name = "___equal___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == "!=") {
 			name = "___notEqual___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Z", ConstantType::UTF8);
 
 		} else if (node->label == ".") {
 			name = "___concat___";
-			id = curClass->putRef(name, "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		} else if (node->label == "=") {
-			//curClass->putRef("concat", "rtl/BaseType;", ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
+			//curClass->putRef("concat", OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
 		}
 		if(id != -1) {
@@ -344,8 +367,9 @@ class FinderParam {
 private:
 	vector<string> list;
 	set<string> pre;
-	
-	void DefinitionVar(const string& str) {
+	PHPClass* curClass;
+
+	void genArray(Node* exprList) {
 
 	}
 
@@ -368,12 +392,18 @@ private:
 		}
 
 		if(node->label == "Function Call") {
-			
+			string nameFunc = node->child[0]->child[0]->label;
+
+			if(nameFunc == "array") {
+				genArray(node->child[1]);
+			} else {
+				getConstName(node->child[1]->child.size());
+				//curClass->putRef(nameFunc, curClass->name, ConstantType::METHOD_REF, getConstName(args.size()), ConstantType::UTF8);
+			}
 		}
 	}
 
 public:
-
 	static void putField(PHPMethod* mtd, PHPClass* cls, const vector<string>& list) {
 		for(auto it = list.begin(); it != list.end(); ++it) {
 			int id1 = cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(*it)));
@@ -390,6 +420,7 @@ public:
 
 	FinderParam(Node* node, PHPClass* cls, PHPMethod* mtd) {
 		tryNode(node);
+		curClass = cls;
 		putField(mtd, cls, list);
 	}
 
@@ -496,21 +527,6 @@ private:
 	}
 
 public:
-	static string getConstName(int col) {
-		string res;
-
-		res.pb('(');
-
-		while(col-- > 0) {
-			res += "Lrtl/BaseType;";
-		}
-		res.pb(')');
-
-		res += "Ljava/lang/Object;";
-
-		return res;
-	}
-
 	FinderFunc(Node* node, const string& nameClass) {
 		acc = AccessLevel::PUBLIC;
 		isStat = false;
@@ -535,7 +551,7 @@ void FillListConstantTable(Node* node, PHPClass* cls) {
 			|| node->label == "Return") {
 				return;
 		}
-		
+
 		PHPConstant* buf = PHPConstant::getConstant(node->label, cls);
 		if(buf->type != ConstantType::INT || *((int*)(buf->value)) > MAXINT) {
 			int id = cls->pushConst(buf);
@@ -569,6 +585,19 @@ void GenDefaultConstructor(PHPClass* cls) {
 	cls->methods[name] = meth;
 	meth->localVariables["this"] = mp(cls->pushConst(new PHPConstant(ConstantType::UTF8, new string("this"))), cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(cls->name))));
 	meth->sequenceLocalVariables.pb("this");
+}
+
+void FindBaseType(PHPClass* curClass) {
+	int id = -1;
+
+	for(int i = 0; i < curClass->constantTable.size(); ++i) {
+		if(curClass->constantTable[i]->type == ConstantType::CLASS && *((string*)curClass->constantTable[(*(int*)curClass->constantTable[i]->value)]->value) == OBJECT) {
+			id = i;
+			break;
+		}	
+	}
+
+	curClass->BaseType = id;
 }
 
 void FillTables(Node* node) {
@@ -646,6 +675,8 @@ void FillTables(Node* node) {
 					}
 				}
 			}
+
+			FindBaseType(curClass);
 		}
 	}
 }
@@ -691,46 +722,34 @@ void printTableConstant(vector<PHPConstant*>& tc) {
 		int** data;
 		string str;
 		switch (tc[i]->type) {
-			case ConstantType::UTF8:
-				printf("%c", 0x01);
-				str = *((string*)(tc[i]->value));
-				printBytes(get_u2((unsigned short)str.length()));
-				printString(str);
-				break;
-			case ConstantType::INT:
-				printf("%c", 0x03);
-				printBytes(get_s4(*((long int*)tc[i]->value)));
-				break;
-			case ConstantType::STRING:
-				printf("%c", 0x08);
-				printBytes(get_u2(*((int*)tc[i]->value)));
-				break;
-			case ConstantType::FLOAT:
-				printf("%c", 0x04);
-				printBytes(get_s4(*((float*)tc[i]->value)));
-				break;
-			case ConstantType::CLASS:
-				printf("%c", 0x07);
-				printBytes(get_u2(*((int*)tc[i]->value)));
-				break;
-			case ConstantType::NAME_AND_TYPE:
-				printf("%c", 0x0C);
-				data = (int**)tc[i]->value;
-				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*(data+1))));
-				break;
-			case ConstantType::METHOD_REF:
-				printf("%c", 0x0A);
-				data = (int**)tc[i]->value;
-				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*(data+1))));
-				break;
-			case ConstantType::FIELD_REF:
-				printf("%c", 0x09);
-				data = (int**)tc[i]->value;
-				printBytes(get_u2((int)(*data)));
-				printBytes(get_u2((int)(*(data+1))));
-				break;
+		case ConstantType::UTF8:
+			printf("%c", 0x01);
+			str = *((string*)(tc[i]->value));
+			printBytes(get_u2((unsigned short)str.length()));
+			printString(str);
+			break;
+		case ConstantType::CLASS:
+			printf("%c", 0x07);
+			printBytes(get_u2(*((int*)tc[i]->value)));
+			break;
+		case ConstantType::NAME_AND_TYPE:
+			printf("%c", 0x0C);
+			data = (int**)tc[i]->value;
+			printBytes(get_u2((int)(*data)));
+			printBytes(get_u2((int)(*(data+1))));
+			break;
+		case ConstantType::METHOD_REF:
+			printf("%c", 0x0A);
+			data = (int**)tc[i]->value;
+			printBytes(get_u2((int)(*data)));
+			printBytes(get_u2((int)(*(data+1))));
+			break;
+		case ConstantType::FIELD_REF:
+			printf("%c", 0x09);
+			data = (int**)tc[i]->value;
+			printBytes(get_u2((int)(*data)));
+			printBytes(get_u2((int)(*(data+1))));
+			break;
 		}
 	}
 }
@@ -739,15 +758,15 @@ void printAccessFlags(PHPMethod* method) {
 	int res;
 	method->isStatic ? res = 0x08 : res = 0x00;
 	switch (method->accessLevel) {
-		case AccessLevel::PRIVATE:
-			res |= 0x02;
-			break;
-		case AccessLevel::PROTECTED:
-			res |= 0x04;
-			break;
-		case AccessLevel::PUBLIC:
-			res |= 0x01;
-			break;
+	case AccessLevel::PRIVATE:
+		res |= 0x02;
+		break;
+	case AccessLevel::PROTECTED:
+		res |= 0x04;
+		break;
+	case AccessLevel::PUBLIC:
+		res |= 0x01;
+		break;
 	}
 	printf("%c", 0x00);
 	printf("%c", res);
@@ -769,6 +788,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body == NULL) {
 		return getDefaultConstructor();
 	}
+<<<<<<< HEAD
 	//bytecode.push_back(0xB1);
 	if (body->label == "Program List") {
 		for (auto it = body->child.begin(); it != body->child.end(); ++it) {
@@ -830,6 +850,55 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, aloadByte);
 		return bytecode;
 	} 
+=======
+	bytecode.push_back(0xB1);
+	/*if (body->label == "=") {
+	bytecode = getBytecode(phpClass, method, body->child[1]);
+	auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
+	int pos = it - method->sequenceLocalVariables.begin();
+	bytecode = append(bytecode, astore(pos));
+	return bytecode;
+	}
+	if (body->label == "+") {
+	bytecode = getBytecode(phpClass, method, body->child[0]);
+	vector<char> right = getBytecode(phpClass, method, body->child[1]);
+	bytecode = append(bytecode, right);
+	vector<char> iv = invokevirtual(phpClass->operators["___add___"]);
+	bytecode = append(bytecode, iv);
+	return bytecode;
+	}
+	if (body->label.find("\'") != string::npos) {
+	bytecode = _new(phpClass->classConstantNumber);
+	vector<char> d = dup();
+	bytecode = append(bytecode, d);
+	pushIntConstant(1, true);
+	vector<char> iv = invokevirtual(phpClass->operators["S<init>"]);
+	bytecode = append(bytecode, iv);
+	return bytecode;
+	} else if (body->label.find(".") != string::npos) {
+	bytecode = _new(phpClass->classConstantNumber);
+	vector<char> d = dup();
+	bytecode = append(bytecode, d);
+	pushIntConstant(1, true);
+	vector<char> iv = invokevirtual(phpClass->operators["D<init>"]);
+	bytecode = append(bytecode, iv);
+	} else if (body->label[0] >= '0' && body->label[0] <= '9') {
+	printBytes(_new(phpClass->classConstantNumber));
+	printBytes(dup());
+	pushIntConstant(1, true);
+	invokevirtual(phpClass->operators["I<init>"]);
+	} else if (body->label == "$") {
+	auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->label);
+	int pos = it - method->sequenceLocalVariables.begin();
+	vector<char> aloadByte = aload(pos);
+	bytecode.insert(
+	bytecode.end(),
+	std::make_move_iterator(aloadByte.begin()),
+	std::make_move_iterator(aloadByte.end())
+	);
+	return bytecode;
+	} */
+>>>>>>> 4d694a8bd1e0eb3a3f10c9f92f96cf2d66c8c53c
 	return bytecode;
 	/* */
 }
@@ -898,7 +967,7 @@ void main() {
 
 	auto it = --phpClasses.end();
 	it->second->name = nameClass;
-	
+
 	it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string("")));
 	it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string("Code")));
 	it->second->classConstantNumber = it->second->pushConst(new PHPConstant(ConstantType::CLASS, new int(it->second->pushConst(new PHPConstant(ConstantType::UTF8, new string(it->second->name))))));
@@ -927,6 +996,7 @@ void main() {
 	FinderParam s(root, phpClasses["___Base___"], it->second->methods["main"]);
 	FinderFunc fs(root, "___Base___");
 
+	FindBaseType(it->second);
 	FillTables(root);
 
 	prints();
