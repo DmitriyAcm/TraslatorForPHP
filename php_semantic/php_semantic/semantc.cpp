@@ -805,12 +805,24 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body == NULL) {
 		return getDefaultConstructor();
 	}
-	if (body->label == "Program List") {
+	if (body->label == "Program List" || body->label == "Statement List") {
 		for (auto it = body->child.begin(); it != body->child.end(); ++it) {
 			vector<char> op = getBytecode(phpClass, method, (*it));
 			bytecode = append(bytecode, op);
 		}
-		bytecode = append(bytecode, returnVoid());
+		if (body->label != "Statement List") {
+			bytecode = append(bytecode, returnVoid());
+		}
+		return bytecode;
+	}
+	if (body->label == "If Statement") {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
+		vector<char> ieb = ifeq();
+		bytecode = append(bytecode, ieb);
+		vector<char> ifblockcode = getBytecode(phpClass, method, body->child[1]);
+		int shift = ifblockcode.size() + ieb.size() + 2;
+		bytecode = append(bytecode, get_s2(shift));
+		bytecode = append(bytecode, ifblockcode);
 		return bytecode;
 	}
 	if (body->label == "=") {
@@ -917,7 +929,9 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		return bytecode;
 	}
 	if (body->label.find("\'") != string::npos) {
-		bytecode = _new(phpClass->BaseType);
+		PHPConstant* mr = phpClass->constantTable[phpClass->operators["S<init>"]];
+		int classConst = (int)(*(int**)mr->value);
+		bytecode = _new(classConst);
 		vector<char> d = dup();
 		bytecode = append(bytecode, d);
 		vector<char> ldcv = ldc(phpClass->liters[body->label]);
@@ -926,7 +940,9 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, iv);
 		return bytecode;
 	} else if (body->label.find(".") != string::npos) {
-		bytecode = _new(phpClass->BaseType);
+		PHPConstant* mr = phpClass->constantTable[phpClass->operators["D<init>"]];
+		int classConst = (int)(*(int**)mr->value);
+		bytecode = _new(classConst);
 		vector<char> d = dup();
 		bytecode = append(bytecode, d);
 		vector<char> ldcv = ldc(phpClass->floats[body->label]);
@@ -934,7 +950,9 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		vector<char> iv = invokespecial(phpClass->operators["D<init>"]);
 		bytecode = append(bytecode, iv);
 	} else if (body->label[0] >= '0' && body->label[0] <= '9') {
-		bytecode = _new(phpClass->BaseType);
+		PHPConstant* mr = phpClass->constantTable[phpClass->operators["I<init>"]];
+		int classConst = (int)(*(int**)mr->value);
+		bytecode = _new(classConst);
 		vector<char> d = dup();
 		bytecode = append(bytecode, d);
 		int number = stoi(body->label);

@@ -174,3 +174,17 @@ vector<char> dup() {
 	return result;
 }
 
+
+vector<char> ifeq() {
+	vector<char> result = vector<char>();
+	
+	result.push_back(0x99);
+	return result;
+}
+
+vector<char> _goto() {
+	vector<char> result = vector<char>();
+	
+	result.push_back(0xA7);
+	return result;
+}
