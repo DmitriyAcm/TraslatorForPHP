@@ -834,6 +834,20 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 
 		return bytecode;
 	}
+	if (body->label == "Do-While Statement") {
+		vector<char> ifblock = getBytecode(phpClass, method, body->child[0]);
+		ifblock = append(ifblock, ifne());
+
+		vector<char> body1 = getBytecode(phpClass, method, body->child[1]);
+
+		int shift = -(int)(body1.size() + ifblock.size() - 1);
+		ifblock = append(ifblock, get_s2(shift));
+
+		bytecode = append(bytecode, body1);
+		bytecode = append(bytecode, ifblock);
+
+		return bytecode;
+	}
 	if (body->label == "For Statement") {
 		for(int i = 0; i < body->child[0]->child.size(); ++i) {
 			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]->child[i]));
