@@ -434,7 +434,7 @@ public:
 	FinderParam(Node* node, PHPClass* cls, PHPMethod* mtd) {
 		curClass = cls;
 		tryNode(node);
-		
+
 		putField(mtd, cls, list);
 	}
 
@@ -825,7 +825,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 
 		int shift = -(int)(body1.size() + ifblock.size() + 1);
 		body1 = append(body1, get_s2(shift));
-		
+
 		shift = body1.size() + 3;
 		ifblock = append(ifblock, get_s2(shift));
 
@@ -852,7 +852,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		for(int i = 0; i < body->child[0]->child.size(); ++i) {
 			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]->child[i]));
 		}
-		
+
 		vector<char> ifblock = getBytecode(phpClass, method, body->child[1]->child[0]);
 		ifblock = append(ifblock, ifeq());
 
@@ -866,7 +866,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 
 		int shift = -(int)(body1.size() + ifblock.size() + 1);
 		body1 = append(body1, get_s2(shift));
-		
+
 		shift = body1.size() + 3;
 		ifblock = append(ifblock, get_s2(shift));
 
@@ -875,52 +875,68 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 
 		return bytecode;
 	}
-	if (body->label == "Else If Statement") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> ieb = ifeq();
-		bytecode = append(bytecode, ieb);
-		vector<char> ifblockcode = getBytecode(phpClass, method, body->child[1]);
-		ifblockcode = append(ifblockcode, _goto());
-		int shift = ifblockcode.size() + 2 + 3;
-		bytecode = append(bytecode, get_s2(shift));
-		bytecode = append(bytecode, ifblockcode);
-		return bytecode;
-	}
 	if (body->label == "If Statement") {
-		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
-		vector<char> ieb = ifeq();
-		bytecode = append(bytecode, ieb);
+		vector<vector<char>> blocks;
 
+		{
+			vector<char> mainIfCode;
+			mainIfCode = append(mainIfCode, getBytecode(phpClass, method, body->child[0]));
+			vector<char> ieb = ifeq();
+			mainIfCode = append(mainIfCode, ieb);
 
-		vector<char> ifblockcode = getBytecode(phpClass, method, body->child[1]);
-		vector<char> elsebytes;
-		bool isInit = false;
-
-		if (body->child.size() > 2) {
-			vector<char> notif = vector<char>();
+			vector<char> ifblockcode = getBytecode(phpClass, method, body->child[1]);
 			ifblockcode = append(ifblockcode, _goto());
-			int shift = 0;
-			bytecode = append(bytecode, get_s2(ifblockcode.size() + ieb.size() + 2 + 3));
-			bytecode = append(bytecode, ifblockcode);
-			vector<char> elseifbytes = vector<char>();
-			if (body->child[2]->label == "Else If Statement List") {
-				for (int ii = 0; ii < body->child[2]->child.size(); ++ii) {
-					vector<char> ifelsest = vector<char>();
-					ifelsest = getBytecode(phpClass, method, body->child[2]->child[ii]);
-					int elseshift = ifelsest.size() + 2;
-					ifelsest = append(ifelsest, get_s2(elseshift));
-					elseifbytes = append(elseifbytes, ifelsest);
-					shift += elseshift;
-				}
-			}
-			notif = append(notif, get_s2(shift));
-			notif = append(notif, elseifbytes);
-			bytecode = append(bytecode, notif);
-		} else {
-			int shift = ifblockcode.size() + ieb.size() + 2;
-			bytecode = append(bytecode, get_s2(shift));
-			bytecode = append(bytecode, ifblockcode);
+
+			int shift = ifblockcode.size() + 2 + 3;
+			mainIfCode = append(mainIfCode, get_s2(shift));
+
+			mainIfCode = append(mainIfCode, ifblockcode);
+
+			blocks.push_back(mainIfCode);
 		}
+
+		int allshift = blocks.back().size() + 2;
+
+		if(body->child.size() > 2 && body->child[2]->label == "Else If Statement List") {
+			for(int i = 0; i < body->child[2]->child.size(); ++i) {
+				vector<char> mainIfCode;
+				mainIfCode = append(mainIfCode, getBytecode(phpClass, method, body->child[2]->child[i]->child[0]));
+				vector<char> ieb = ifeq();
+				mainIfCode = append(mainIfCode, ieb);
+
+				vector<char> ifblockcode = getBytecode(phpClass, method, body->child[2]->child[i]->child[1]);
+				ifblockcode = append(ifblockcode, _goto());
+
+				int shift = ifblockcode.size() + 2 + 3;
+				mainIfCode = append(mainIfCode, get_s2(shift));
+
+				mainIfCode = append(mainIfCode, ifblockcode);
+
+				blocks.push_back(mainIfCode);
+
+				allshift += blocks.back().size() + 2;
+			}	
+		}
+
+		if(body->child.size() > 3 || body->child.size() > 2 && body->child[2]->label == "Statement List") {
+			vector<char> mainIfCode;
+
+			const int SIZE = body->child.size() - 1;
+
+			mainIfCode = append(mainIfCode, getBytecode(phpClass, method, body->child[SIZE]->child[0]));
+			mainIfCode = append(mainIfCode, _goto());
+
+			blocks.push_back(mainIfCode);
+
+			allshift += blocks.back().size() + 2;
+		}
+
+		for(int i = 0; i < blocks.size(); ++i) {
+			allshift -= (int)(blocks[i].size()) + 2;
+			blocks[i] = append(blocks[i], get_s2(allshift + 3));
+			bytecode = append(bytecode, blocks[i]);
+		}
+
 		return bytecode;
 	}
 	if (body->label == "=") {
