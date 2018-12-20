@@ -15,39 +15,42 @@ ___Base___
 14 UTF8 --- rtl/BaseType
 15 CLASS --- 14
 16 METHOD_REF --- 15,13
-17 UTF8 --- main
-18 UTF8 --- ([Ljava/lang/String;)V
-19 NAME_AND_TYPE --- 17,18
-20 METHOD_REF --- 3,19
-21 UTF8 --- [Ljava/lang/String;
-22 UTF8 --- args
-23 UTF8 --- (Ljava/lang/String;)V
-24 NAME_AND_TYPE --- 6,23
-25 UTF8 --- rtl/StringType
-26 CLASS --- 25
-27 METHOD_REF --- 26,24
-28 UTF8 --- Write number: 
-29 STRING --- 28
-30 UTF8 --- a
-31 UTF8 --- fgets
-32 UTF8 --- STDIN
-33 UTF8 --- (I)V
-34 NAME_AND_TYPE --- 6,33
-35 UTF8 --- rtl/IntType
-36 CLASS --- 35
-37 METHOD_REF --- 36,34
-38 UTF8 --- Number > 0
-39 STRING --- 38
-40 UTF8 --- ___echo___
-41 UTF8 --- (Ljava/lang/Object;)V
-42 NAME_AND_TYPE --- 40,41
-43 UTF8 --- rtl/IO
-44 CLASS --- 43
-45 METHOD_REF --- 44,42
-46 UTF8 --- ___getString___
-47 UTF8 --- ()Lrtl/BaseType;
-48 NAME_AND_TYPE --- 46,47
-49 METHOD_REF --- 44,48
+17 UTF8 --- ___equal___
+18 NAME_AND_TYPE --- 17,12
+19 METHOD_REF --- 15,18
+20 UTF8 --- main
+21 UTF8 --- ([Ljava/lang/String;)V
+22 NAME_AND_TYPE --- 20,21
+23 METHOD_REF --- 3,22
+24 UTF8 --- [Ljava/lang/String;
+25 UTF8 --- args
+26 UTF8 --- (Ljava/lang/String;)V
+27 NAME_AND_TYPE --- 6,26
+28 UTF8 --- rtl/StringType
+29 CLASS --- 28
+30 METHOD_REF --- 29,27
+31 UTF8 --- Write number: 
+32 STRING --- 31
+33 UTF8 --- a
+34 UTF8 --- fgets
+35 UTF8 --- STDIN
+36 UTF8 --- (I)V
+37 NAME_AND_TYPE --- 6,36
+38 UTF8 --- rtl/IntType
+39 CLASS --- 38
+40 METHOD_REF --- 39,37
+41 UTF8 --- aa
+42 STRING --- 41
+43 UTF8 --- ___echo___
+44 UTF8 --- (Ljava/lang/Object;)V
+45 NAME_AND_TYPE --- 43,44
+46 UTF8 --- rtl/IO
+47 CLASS --- 46
+48 METHOD_REF --- 47,45
+49 UTF8 --- ___getString___
+50 UTF8 --- ()Lrtl/BaseType;
+51 NAME_AND_TYPE --- 49,50
+52 METHOD_REF --- 47,51
 
 ___Base___
 
@@ -57,15 +60,16 @@ ___Base___
 
 main
 
-0 args 22 21
-1 a 30 14
+0 args 25 24
+1 a 33 14
 
 ////////////////////////////////////////////////////////////////////////////////////OPERATORS////////////////////////////////////////////////////////////////////////////////////
 ___Base___
 
-I<init> 37
-S<init> 27
-___echo___ 45
-___getString___ 49
+I<init> 40
+S<init> 30
+___echo___ 48
+___equal___ 19
+___getString___ 52
 ___greater___ 16
 

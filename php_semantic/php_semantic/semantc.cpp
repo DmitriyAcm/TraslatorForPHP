@@ -815,14 +815,52 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		}
 		return bytecode;
 	}
-	if (body->label == "If Statement") {
+	if (body->label == "Else If Statement") {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		vector<char> ieb = ifeq();
 		bytecode = append(bytecode, ieb);
 		vector<char> ifblockcode = getBytecode(phpClass, method, body->child[1]);
-		int shift = ifblockcode.size() + ieb.size() + 2;
+		ifblockcode = append(ifblockcode, _goto());
+		int shift = ifblockcode.size() + 2 + 3;
 		bytecode = append(bytecode, get_s2(shift));
 		bytecode = append(bytecode, ifblockcode);
+		return bytecode;
+	}
+	if (body->label == "If Statement") {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
+		vector<char> ieb = ifeq();
+		bytecode = append(bytecode, ieb);
+
+
+		vector<char> ifblockcode = getBytecode(phpClass, method, body->child[1]);
+		vector<char> elsebytes;
+		bool isInit = false;
+
+		if (body->child.size() > 2) {
+			vector<char> notif = vector<char>();
+			ifblockcode = append(ifblockcode, _goto());
+			int shift = 0;
+			bytecode = append(bytecode, get_s2(ifblockcode.size() + ieb.size() + 2 + 3));
+			bytecode = append(bytecode, ifblockcode);
+			vector<char> elseifbytes = vector<char>();
+			if (body->child[2]->label == "Else If Statement List") {
+				for (int ii = 0; ii < body->child[2]->child.size(); ++ii) {
+					vector<char> ifelsest = vector<char>();
+					ifelsest = getBytecode(phpClass, method, body->child[2]->child[ii]);
+					int elseshift = ifelsest.size() + 2;
+					ifelsest = append(ifelsest, get_s2(elseshift));
+					elseifbytes = append(elseifbytes, ifelsest);
+					shift += elseshift;
+				}
+			}
+			notif = append(notif, get_s2(shift));
+			notif = append(notif, elseifbytes);
+			bytecode = append(bytecode, notif);
+		} else {
+			int shift = ifblockcode.size() + ieb.size() + 2;
+			bytecode = append(bytecode, get_s2(shift));
+			bytecode = append(bytecode, ifblockcode);
+		}
 		return bytecode;
 	}
 	if (body->label == "=") {
