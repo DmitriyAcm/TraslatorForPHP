@@ -815,9 +815,6 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		}
 		return bytecode;
 	}
-<<<<<<< HEAD
-	if (body->label == "Else If Statement") {
-=======
 	if (body->label == "While Statement") {
 		vector<char> ifblock = getBytecode(phpClass, method, body->child[0]);
 		ifblock = append(ifblock, ifeq());
@@ -878,8 +875,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 
 		return bytecode;
 	}
-	if (body->label == "If Statement") {
->>>>>>> 11be74562e7991d009d6837e9a1e15819aecc882
+	if (body->label == "Else If Statement") {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		vector<char> ieb = ifeq();
 		bytecode = append(bytecode, ieb);
