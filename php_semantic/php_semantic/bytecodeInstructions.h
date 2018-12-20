@@ -182,6 +182,13 @@ vector<char> ifeq() {
 	return result;
 }
 
+vector<char> ifne() {
+	vector<char> result = vector<char>();
+	
+	result.push_back(0x9A);
+	return result;
+}
+
 vector<char> _goto() {
 	vector<char> result = vector<char>();
 	

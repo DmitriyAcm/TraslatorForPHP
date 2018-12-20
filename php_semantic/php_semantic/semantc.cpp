@@ -815,7 +815,71 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		}
 		return bytecode;
 	}
+<<<<<<< HEAD
 	if (body->label == "Else If Statement") {
+=======
+	if (body->label == "While Statement") {
+		vector<char> ifblock = getBytecode(phpClass, method, body->child[0]);
+		ifblock = append(ifblock, ifeq());
+
+		vector<char> body1 = getBytecode(phpClass, method, body->child[1]);
+
+		body1 = append(body1, _goto());
+
+		int shift = -(int)(body1.size() + ifblock.size() + 1);
+		body1 = append(body1, get_s2(shift));
+		
+		shift = body1.size() + 3;
+		ifblock = append(ifblock, get_s2(shift));
+
+		bytecode = append(bytecode, ifblock);
+		bytecode = append(bytecode, body1);
+
+		return bytecode;
+	}
+	if (body->label == "Do-While Statement") {
+		vector<char> ifblock = getBytecode(phpClass, method, body->child[0]);
+		ifblock = append(ifblock, ifne());
+
+		vector<char> body1 = getBytecode(phpClass, method, body->child[1]);
+
+		int shift = -(int)(body1.size() + ifblock.size() - 1);
+		ifblock = append(ifblock, get_s2(shift));
+
+		bytecode = append(bytecode, body1);
+		bytecode = append(bytecode, ifblock);
+
+		return bytecode;
+	}
+	if (body->label == "For Statement") {
+		for(int i = 0; i < body->child[0]->child.size(); ++i) {
+			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]->child[i]));
+		}
+		
+		vector<char> ifblock = getBytecode(phpClass, method, body->child[1]->child[0]);
+		ifblock = append(ifblock, ifeq());
+
+		vector<char> body1 = getBytecode(phpClass, method, body->child[3]);
+
+		for(int i = 0; i < body->child[2]->child.size(); ++i) {
+			body1 = append(body1, getBytecode(phpClass, method, body->child[2]->child[i]));
+		}
+
+		body1 = append(body1, _goto());
+
+		int shift = -(int)(body1.size() + ifblock.size() + 1);
+		body1 = append(body1, get_s2(shift));
+		
+		shift = body1.size() + 3;
+		ifblock = append(ifblock, get_s2(shift));
+
+		bytecode = append(bytecode, ifblock);
+		bytecode = append(bytecode, body1);
+
+		return bytecode;
+	}
+	if (body->label == "If Statement") {
+>>>>>>> 11be74562e7991d009d6837e9a1e15819aecc882
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		vector<char> ieb = ifeq();
 		bytecode = append(bytecode, ieb);
