@@ -7,6 +7,7 @@
 #include <set>
 #include <iterator>
 #include <algorithm>
+#include <process.h>
 
 #include "bytecodeInstructions.h"
 
@@ -14,10 +15,6 @@ using namespace std;
 
 #define pb push_back
 #define mp make_pair
-
-//	BYTECODE	//
-
-//	BYTECODE	//
 
 const string OBJECT = "rtl/BaseType";
 const string FUNCT = "Function Definition";
@@ -373,9 +370,13 @@ private:
 	PHPClass* curClass;
 
 	void genArray(Node* exprList) {
-		curClass->operators["___putkey___"] = curClass->putRef("___put___", "rtl/Array", ConstantType::METHOD_REF, "(Ljava/lang/String;Lrtl/BaseType;)V", ConstantType::UTF8);
+		curClass->operators["___putkey___"] = curClass->putRef("___put___", "rtl/Array", ConstantType::METHOD_REF, "(Lrtl/BaseType;Lrtl/BaseType;)V", ConstantType::UTF8);
 		curClass->operators["___put___"] = curClass->putRef("___put___", "rtl/Array", ConstantType::METHOD_REF, "(Lrtl/BaseType;)V", ConstantType::UTF8);
-		curClass->operators["___get___"] = curClass->putRef("___get___", "rtl/Array", ConstantType::METHOD_REF, "(Ljava/lang/String;)Lrtl/BaseType;", ConstantType::UTF8);
+		curClass->operators["___getkey___"] = curClass->putRef("___get___", "rtl/Array", ConstantType::METHOD_REF, "(Lrtl/BaseType;)Lrtl/BaseType;", ConstantType::UTF8);
+		curClass->operators["___get___"] = curClass->putRef("___get___", "rtl/Array", ConstantType::METHOD_REF, "()Lrtl/BaseType;", ConstantType::UTF8);
+		curClass->operators["Array<init>"] = curClass->putRef("<init>", "rtl/Array", ConstantType::METHOD_REF, "([Lrtl/Pair;)V", ConstantType::UTF8);
+		curClass->operators["Pair2<init>"] = curClass->putRef("<init>", "rtl/Pair", ConstantType::METHOD_REF, "(Lrtl/BaseType;Lrtl/BaseType;)V", ConstantType::UTF8);
+		curClass->operators["Pair1<init>"] = curClass->putRef("<init>", "rtl/Pair", ConstantType::METHOD_REF, "(Lrtl/BaseType;)V", ConstantType::UTF8);
 	}
 
 	void tryNode(Node* node) {
@@ -694,6 +695,10 @@ void prints();
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+//	BYTECODE	//
+vector<char> getBytecodeNewArray(PHPClass* phpClass, PHPMethod* method, Node* body);
+vector<char> getBytecodeArrayElement(PHPClass* phpClass, PHPMethod* method, Node* body, int depth);
+//	BYTECODE	//
 
 void printString(string& str) {
 	const char* s = str.c_str();
@@ -940,10 +945,41 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		return bytecode;
 	}
 	if (body->label == "=") {
-		bytecode = getBytecode(phpClass, method, body->child[1]);
-		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->child[0]->label);
-		int pos = it - method->sequenceLocalVariables.begin();
-		bytecode = append(bytecode, astore(pos));
+		if (body->child[0]->label == "Array Element") {
+			bytecode = append(bytecode, getBytecodeArrayElement(phpClass, method, body->child[0]->child[0], 1));
+			if (body->child[0]->child.size() > 1) {
+				bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]->child[1]));
+				bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
+				bytecode = append(bytecode, invokevirtual(phpClass->operators["___putkey___"]));
+			} else {
+				bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
+				bytecode = append(bytecode, invokevirtual(phpClass->operators["___put___"]));
+			}
+			return bytecode;
+		} else {
+			auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->child[0]->label);
+			int pos = it - method->sequenceLocalVariables.begin();
+			if (body->child[1]->label == "Function Call" && body->child[1]->child[0]->label == "ID" && body->child[1]->child[0]->child[0]->label == "array") {
+				/*int mrarrayvalue = phpClass->operators["Array<init>"];
+				PHPConstant* mrarray = phpClass->constantTable[mrarrayvalue];
+				int classConstArray = (int)(*(int**)mrarray->value);
+				bytecode = append(bytecode, _new(classConstArray));
+				bytecode = append(bytecode, dup());
+				bytecode = append(bytecode, invokespecial(mrarrayvalue));
+				bytecode = append(bytecode, astore(pos));
+				bytecode = append(bytecode, getBytecodeNewArray(phpClass, method, body->child[1]->child[1], classConstArray, pos, 0));
+				return bytecode;*/
+				bytecode = append(bytecode, getBytecodeNewArray(phpClass, method, body->child[1]->child[1]));
+				bytecode = append(bytecode, astore(pos));
+				return bytecode;
+			} else {
+				bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
+				bytecode = append(bytecode, astore(pos));
+			}
+			//bytecode = append(bytecode, astore(pos));
+			//return bytecode;
+		}
+
 		return bytecode;
 	}
 	if (body->label == "+") {
@@ -1033,12 +1069,18 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		}
 		return bytecode;
 	}
+	if (body->label == "Array Element") {
+		bytecode = append(bytecode, getBytecodeArrayElement(phpClass, method, body, 0));
+		return bytecode;
+	}
 	if (body->label == "Function Call") {
 		string funcName = body->child[0]->child[0]->label;
 		if (funcName == "fgets") {
 			bytecode = append(bytecode, invokestatic(phpClass->operators["___getString___"]));
 		} else if (funcName == "fgetc") {
 			bytecode = append(bytecode, invokestatic(phpClass->operators["___getChar___"]));
+		} else if (funcName == "array") {
+			bytecode = append(bytecode, getBytecodeNewArray(phpClass, method, body->child[1]));
 		}
 		return bytecode;
 	}
@@ -1089,6 +1131,114 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	return bytecode;
 	/* */
 }
+
+vector<char> getBytecodeNewArray(PHPClass* phpClass, PHPMethod* method, Node* body) {
+	vector<char> bytecode = vector<char>();
+	PHPConstant* mrarray = phpClass->constantTable[phpClass->operators["Array<init>"]];
+	int classConstArray = (int)(*(int**)mrarray->value);
+	PHPConstant* mrpair1 = phpClass->constantTable[phpClass->operators["Pair1<init>"]];
+	int classConstPair = (int)(*(int**)mrpair1->value);
+	int countInits = body->child.size();
+	bytecode = append(bytecode, _new(classConstArray));
+	bytecode = append(bytecode, dup());
+	bytecode = append(bytecode, pushIntConstant(countInits));
+	bytecode = append(bytecode, anewarray(classConstPair));
+	for (int i = 0; i < body->child.size(); ++i) {
+		bytecode = append(bytecode, dup());
+		bytecode = append(bytecode, pushIntConstant(i));
+		bytecode = append(bytecode, _new(classConstPair));
+		bytecode = append(bytecode, dup());
+		if (body->child[i]->label == "=>") {
+			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[i]->child[0]));
+			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[i]->child[1]));
+			bytecode = append(bytecode, invokespecial(phpClass->operators["Pair2<init>"]));
+		} else {
+			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[i]));
+			bytecode = append(bytecode, invokespecial(phpClass->operators["Pair1<init>"]));
+		}
+		bytecode = append(bytecode, aastore());
+	}
+	bytecode = append(bytecode, invokespecial(phpClass->operators["Array<init>"]));
+	/*for (auto it = body->child.begin(); it != body->child.end(); ++it) {
+		bytecode = append(bytecode, aload(varPos));
+		if (depth > 0) {
+			for (int curDepth = 1; curDepth <= depth; ++curDepth) {
+				bytecode = append(bytecode, invokevirtual(phpClass->operators["___get___"]));
+				bytecode = append(bytecode, checkcast(classConst));
+			}
+		}
+		if ((*it)->label == "=>") {
+			bytecode = append(bytecode, getBytecode(phpClass, method, (*it)->child[0]));
+			if ((*it)->child[1]->label == "Function Call" && (*it)->child[1]->child[0]->label == "ID" && (*it)->child[1]->child[0]->child[0]->label == "array") {
+				bytecode = append(bytecode, _new(classConst));
+				bytecode = append(bytecode, dup());
+				bytecode = append(bytecode, invokespecial(phpClass->operators["Array<init>"]));
+				bytecode = append(bytecode, invokevirtual(phpClass->operators["___putkey___"]));
+				bytecode = append(bytecode, getBytecodeNewArray(phpClass, method, (*it)->child[1]->child[1], classConst, varPos, depth + 1));
+			} else {
+				bytecode = append(bytecode, getBytecode(phpClass, method, (*it)->child[1]));
+				bytecode = append(bytecode, invokevirtual(phpClass->operators["___putkey___"]));
+			}
+		} else if ((*it)->label == "Function Call" && (*it)->child[0]->label == "ID" && (*it)->child[0]->child[0]->label == "array") {
+			bytecode = append(bytecode, _new(classConst));
+			bytecode = append(bytecode, dup());
+			bytecode = append(bytecode, invokespecial(phpClass->operators["Array<init>"]));
+			bytecode = append(bytecode, invokevirtual(phpClass->operators["___put___"]));
+			bytecode = append(bytecode, getBytecodeNewArray(phpClass, method, (*it)->child[1], classConst, varPos, depth + 1));
+		} else {
+			bytecode = append(bytecode, getBytecode(phpClass, method, (*it)));
+			bytecode = append(bytecode, invokevirtual(phpClass->operators["___put___"]));
+		}
+	}*/
+	return bytecode;
+}
+
+vector<char> getBytecodeArrayElement(PHPClass* phpClass, PHPMethod* method, Node* body, int depth) {
+	vector<char> bytecode = vector<char>();
+	if (body->child[0]->label == "Array Element") {
+		bytecode = append(bytecode, getBytecodeArrayElement(phpClass, method, body->child[0], depth + 1));
+	} else {
+		int pos;
+		if (body->label == "$") {
+			auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
+			pos = it - method->sequenceLocalVariables.begin();
+			bytecode = append(bytecode, aload(pos));
+			return bytecode;
+		} else {
+			auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->child[0]->label);
+			pos = it - method->sequenceLocalVariables.begin();
+			bytecode = append(bytecode, aload(pos));
+		}
+		//return bytecode;
+	}
+	if (body->child.size() > 1) {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
+		bytecode = append(bytecode, invokevirtual(phpClass->operators["___getkey___"]));
+	} else {
+		bytecode = append(bytecode, invokevirtual(phpClass->operators["___get___"]));
+	}
+	/*if (body->child.size() > 1) {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
+		bytecode = append(bytecode, invokevirtual(phpClass->operators["___getkey___"]));
+	} else {
+		bytecode = append(bytecode, invokevirtual(phpClass->operators["___get___"]));
+	}*/
+	if (depth != 0) {
+		PHPConstant* mr = phpClass->constantTable[phpClass->operators["Array<init>"]];
+		int classConst = (int)(*(int**)mr->value);
+		bytecode = append(bytecode, checkcast(classConst));
+	}
+	return bytecode;
+}
+
+
+vector<char> getBytecodeInsertedNewArray(PHPClass* phpClass, PHPMethod* method, Node* body, int classConst, int varPos) {
+	vector<char> bytecode = vector<char>();
+	bytecode = append(bytecode, invokevirtual(phpClass->operators["___get___"]));
+	bytecode = append(bytecode, checkcast(classConst));
+	return bytecode;
+}
+
 
 void printCode(PHPClass* phpClass, PHPMethod* method) {
 	printBytes(get_u2(1)); //"Code" const

@@ -195,3 +195,25 @@ vector<char> _goto() {
 	result.push_back(0xA7);
 	return result;
 }
+
+vector<char> checkcast(int classConst) {
+	vector<char> result = vector<char>();
+	
+	result.push_back(0xC0);
+	result = append(result, get_u2(classConst));
+	return result;
+}
+
+vector<char> anewarray(int classConst) {
+	vector<char> result = vector<char>();
+	
+	result.push_back(0xBD);
+	result = append(result, get_u2(classConst));
+	return result;
+}
+
+vector<char> aastore() {
+	vector<char> result = vector<char>();
+	result.push_back(0x53);
+	return result;
+}
