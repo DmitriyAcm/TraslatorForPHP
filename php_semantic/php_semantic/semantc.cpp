@@ -815,7 +815,7 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			vector<char> op = getBytecode(phpClass, method, (*it));
 			bytecode = append(bytecode, op);
 		}
-		if (body->label != "Statement List") {
+		if (body->label == "Program List") {
 			bytecode = append(bytecode, returnVoid());
 		}
 		return bytecode;
@@ -1062,6 +1062,11 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, iv);
 		return bytecode;
 	}
+	if (body->label == "Return") {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
+		bytecode = append(bytecode, areturn());
+		return bytecode;
+	}
 	if (body->label == "Echo") {
 		for (auto it = body->child[0]->child.begin(); it != body->child[0]->child.end(); ++it) {
 			bytecode = append(bytecode, getBytecode(phpClass, method, (*it)));
@@ -1084,7 +1089,12 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		} else if (funcName == "count") {
 			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]->child[0]));
 			bytecode = append(bytecode, invokevirtual(phpClass->operators["___count___"]));
-		} 
+		} else {
+			for (auto itf = body->child[1]->child.begin(); itf != body->child[1]->child.end(); ++itf) {
+				bytecode = append(bytecode, getBytecode(phpClass, method, (*itf)));
+			}
+			bytecode = append(bytecode, invokestatic(phpClass->methods[funcName]->methodrefConstantNumber));
+		}
 		return bytecode;
 	}
 	if (body->label.find("\'") != string::npos) {
@@ -1129,6 +1139,9 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		int pos = it - method->sequenceLocalVariables.begin();
 		vector<char> aloadByte = aload(pos);
 		bytecode = append(bytecode, aloadByte);
+		return bytecode;
+	} else if (body->label == "NULL") {
+		bytecode = append(bytecode, aconst_null());
 		return bytecode;
 	} 
 	return bytecode;

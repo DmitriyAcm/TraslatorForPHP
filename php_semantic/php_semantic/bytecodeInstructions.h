@@ -217,3 +217,15 @@ vector<char> aastore() {
 	result.push_back(0x53);
 	return result;
 }
+
+vector<char> aconst_null() {
+	vector<char> result = vector<char>();
+	result.push_back(0x1);
+	return result;
+}
+
+vector<char> areturn() {
+	vector<char> result = vector<char>();
+	result.push_back(0xB0);
+	return result;
+}
