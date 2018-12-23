@@ -38,49 +38,53 @@ ___Base___
 37 UTF8 --- rtl/IntType
 38 CLASS --- 37
 39 METHOD_REF --- 38,36
-40 UTF8 --- i
-41 UTF8 --- (Ljava/lang/String;)V
-42 NAME_AND_TYPE --- 6,41
-43 UTF8 --- rtl/StringType
-44 CLASS --- 43
-45 METHOD_REF --- 44,42
-46 UTF8 --- Sort...
-47 STRING --- 46
-48 UTF8 --- j
-49 UTF8 --- tmp_var
-50 UTF8 --- Complete!
-51 STRING --- 50
-52 UTF8 --- ___put___
-53 UTF8 --- (Lrtl/BaseType;Lrtl/BaseType;)V
-54 NAME_AND_TYPE --- 52,53
-55 UTF8 --- rtl/Array
-56 CLASS --- 55
-57 METHOD_REF --- 56,54
-58 UTF8 --- (Lrtl/BaseType;)V
-59 NAME_AND_TYPE --- 52,58
-60 METHOD_REF --- 56,59
-61 UTF8 --- ___get___
-62 UTF8 --- (Lrtl/BaseType;)Lrtl/BaseType;
-63 NAME_AND_TYPE --- 61,62
-64 METHOD_REF --- 56,63
-65 UTF8 --- ()Lrtl/BaseType;
-66 NAME_AND_TYPE --- 61,65
-67 METHOD_REF --- 56,66
-68 UTF8 --- ([Lrtl/Pair;)V
-69 NAME_AND_TYPE --- 6,68
-70 METHOD_REF --- 56,69
-71 NAME_AND_TYPE --- 6,53
-72 UTF8 --- rtl/Pair
-73 CLASS --- 72
-74 METHOD_REF --- 73,71
-75 NAME_AND_TYPE --- 6,58
-76 METHOD_REF --- 73,75
-77 UTF8 --- ___echo___
-78 UTF8 --- (Ljava/lang/Object;)V
-79 NAME_AND_TYPE --- 77,78
-80 UTF8 --- rtl/IO
-81 CLASS --- 80
-82 METHOD_REF --- 81,79
+40 UTF8 --- count
+41 UTF8 --- i
+42 UTF8 --- (Ljava/lang/String;)V
+43 NAME_AND_TYPE --- 6,42
+44 UTF8 --- rtl/StringType
+45 CLASS --- 44
+46 METHOD_REF --- 45,43
+47 UTF8 --- Sort...
+48 STRING --- 47
+49 UTF8 --- j
+50 UTF8 --- tmp_var
+51 UTF8 --- Complete!
+52 STRING --- 51
+53 UTF8 --- ___put___
+54 UTF8 --- (Lrtl/BaseType;Lrtl/BaseType;)V
+55 NAME_AND_TYPE --- 53,54
+56 UTF8 --- rtl/Array
+57 CLASS --- 56
+58 METHOD_REF --- 57,55
+59 UTF8 --- (Lrtl/BaseType;)V
+60 NAME_AND_TYPE --- 53,59
+61 METHOD_REF --- 57,60
+62 UTF8 --- ___get___
+63 UTF8 --- (Lrtl/BaseType;)Lrtl/BaseType;
+64 NAME_AND_TYPE --- 62,63
+65 METHOD_REF --- 57,64
+66 UTF8 --- ()Lrtl/BaseType;
+67 NAME_AND_TYPE --- 62,66
+68 METHOD_REF --- 57,67
+69 UTF8 --- ([Lrtl/Pair;)V
+70 NAME_AND_TYPE --- 6,69
+71 METHOD_REF --- 57,70
+72 NAME_AND_TYPE --- 6,54
+73 UTF8 --- rtl/Pair
+74 CLASS --- 73
+75 METHOD_REF --- 74,72
+76 NAME_AND_TYPE --- 6,59
+77 METHOD_REF --- 74,76
+78 UTF8 --- (Lrtl/BaseType;)Ljava/lang/Object;
+79 NAME_AND_TYPE --- 40,78
+80 METHOD_REF --- 3,79
+81 UTF8 --- ___echo___
+82 UTF8 --- (Ljava/lang/Object;)V
+83 NAME_AND_TYPE --- 81,82
+84 UTF8 --- rtl/IO
+85 CLASS --- 84
+86 METHOD_REF --- 85,83
 
 ___Base___
 
@@ -92,25 +96,26 @@ main
 
 0 args 32 31
 1 arr 33 14
-2 i 40 14
-3 j 48 14
-4 tmp_var 49 14
+2 i 41 14
+3 j 49 14
+4 tmp_var 50 14
 
 ////////////////////////////////////////////////////////////////////////////////////OPERATORS////////////////////////////////////////////////////////////////////////////////////
 ___Base___
 
-Array<init> 70
+Array<init> 71
 I<init> 39
-Pair1<init> 76
-Pair2<init> 74
-S<init> 45
+Pair1<init> 77
+Pair2<init> 75
+S<init> 46
 ___add___ 20
-___echo___ 82
-___get___ 67
-___getkey___ 64
+___echo___ 86
+___get___ 68
+___getkey___ 65
 ___greater___ 26
 ___lesser___ 16
-___put___ 60
-___putkey___ 57
+___put___ 61
+___putkey___ 58
 ___sub___ 23
+count 80
 

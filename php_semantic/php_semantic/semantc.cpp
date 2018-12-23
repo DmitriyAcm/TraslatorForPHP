@@ -1081,7 +1081,10 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			bytecode = append(bytecode, invokestatic(phpClass->operators["___getChar___"]));
 		} else if (funcName == "array") {
 			bytecode = append(bytecode, getBytecodeNewArray(phpClass, method, body->child[1]));
-		}
+		} else if (funcName == "count") {
+			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]->child[0]));
+			bytecode = append(bytecode, invokevirtual(phpClass->operators["___count___"]));
+		} 
 		return bytecode;
 	}
 	if (body->label.find("\'") != string::npos) {
