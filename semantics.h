@@ -205,6 +205,13 @@ void doSemanticExpression(struct Expression* expr) {
 				checkSimpleExpression(expr->left);
 				if (expr->left->type == ET_ID) {
 					toLowerCase(expr->left->stringValue);
+					if (strcmp(expr->left->stringValue, "fgets") == 0 || strcmp(expr->left->stringValue, "fgetc") == 0) {
+						if (expr->rightExprList->first->type != ET_ID || strcmp(expr->rightExprList->first->stringValue,"STDIN") != 0) {
+							printf("parse error! wrong operator with console in/out (expected STDIN)!\n");
+							root = NULL;
+							return;
+						}
+					}
 				}
 				break;
 			case ET_ARRAY:
