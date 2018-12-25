@@ -532,6 +532,10 @@ private:
 				haveConstruct = true;
 			}
 
+			if(curClass->name == "___Base___") {
+				mtd->isStatic = true;
+			}
+
 			string lab = node->child[0]->child[0]->label;
 			curClass->methods[node->child[0]->child[0]->label] = mtd;
 			if (!mtd->isStatic) {
@@ -1023,6 +1027,14 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, iv);
 		return bytecode;
 	}
+	if (body->label == ".") {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
+		vector<char> right = getBytecode(phpClass, method, body->child[1]);
+		bytecode = append(bytecode, right);
+		vector<char> iv = invokevirtual(phpClass->operators["___concat___"]);
+		bytecode = append(bytecode, iv);
+		return bytecode;
+	}
 	if (body->label == "-") {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		vector<char> right = getBytecode(phpClass, method, body->child[1]);
@@ -1389,10 +1401,6 @@ void main() {
 	FinderParam s(root, phpClasses["___Base___"], it->second->methods["main"]);
 	FinderFunc fs(root, "___Base___");
 	FindBaseType(it->second);
-
-	for(auto it1 = (it->second)->methods.begin(); it1 != (it->second)->methods.end(); ++it1) {
-		it1->second->isStatic = true;
-	}
 
 	FillTables(root);
 
