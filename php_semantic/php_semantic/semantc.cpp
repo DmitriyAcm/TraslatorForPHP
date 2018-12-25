@@ -1138,7 +1138,11 @@ vector<char> getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			for (auto itf = body->child[1]->child.begin(); itf != body->child[1]->child.end(); ++itf) {
 				bytecode = append(bytecode, getBytecode(phpClass, method, (*itf)));
 			}
-			bytecode = append(bytecode, invokestatic(phpClass->methods[funcName]->methodrefConstantNumber));
+			if (phpClass->methods[funcName] != NULL) {
+				bytecode = append(bytecode, invokestatic(phpClass->methods[funcName]->methodrefConstantNumber));
+			} else {
+				bytecode = append(bytecode, invokestatic(0));
+			}
 		}
 		return bytecode;
 	}
