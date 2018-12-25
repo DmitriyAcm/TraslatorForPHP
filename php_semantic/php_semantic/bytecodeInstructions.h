@@ -21,14 +21,14 @@ public:
 
 	}
 
-	void SetGOTO(int dest, int idOper) {
-		vector<char> curEnd = get_u2(dest);
-		
+	void SetGOTO(int idOper) {
+		//vector<char> curEnd = get_u2(dest);
+		int dest = code.size();
 		for(int i = 0; i < code.size(); ++i) {
 			if(mask[i] == idOper) {
-				code[i] = curEnd[0];
+				code[i] = 0; //curEnd[0];
 				++i;
-				code[i + 1] = curEnd[1];
+				code[i + 1] = 0;//curEnd[1];
 			}
 		}
 	}

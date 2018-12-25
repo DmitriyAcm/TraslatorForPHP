@@ -67,9 +67,20 @@ public:
 					}
 				}
 
-				int i = s.find("\"") + 1;
-				while(s[i] != '\"') {
-					buf2.pb(s[i++]);
+				int j = s.find("\"") + 1;
+
+				while(1) {
+					while(j < s.size() && s[j] != '\"') {
+						buf2.pb(s[j++]);
+					}
+
+					if(j == s.size()) {
+						buf2.pb('\n');
+						getline(cin, s);
+						continue;
+					}
+
+					break;
 				}
 
 				book[buf1] = buf2;
