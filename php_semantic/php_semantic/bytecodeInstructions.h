@@ -1,14 +1,60 @@
 #include <vector>
 #include "bytes.h"
 
+class ByteCode {
+public:
+	vector<char> code;
+private:
+	vector<char> mask;
+public:
+	ByteCode(const vector<char>& bytes, int Ins = 0) {
+		code = bytes;
+		mask.resize(code.size(), Ins);
+	}
+
+	ByteCode(const ByteCode& other) {
+		code = other.code;
+		mask = other.mask;
+	}
+
+	ByteCode() {
+
+	}
+
+	void SetGOTO(int dest, int idOper) {
+		vector<char> curEnd = get_u2(dest);
+		
+		for(int i = 0; i < code.size(); ++i) {
+			if(mask[i] == idOper) {
+				code[i] = curEnd[0];
+				++i;
+				code[i + 1] = curEnd[1];
+			}
+		}
+	}
+
+	int size() {
+		return code.size();
+	}
+
+	friend ByteCode append(ByteCode left, ByteCode right);
+};
+
 vector<char> append(vector<char> left, vector<char> right) {
 	vector<char> result(left);
+	
 	result.insert(
 		result.end(),
 		std::make_move_iterator(right.begin()),
 		std::make_move_iterator(right.end())
 	);
 	return result;
+}
+
+ByteCode append(ByteCode left, ByteCode right) {
+	left.code = append(left.code, right.code);
+	left.mask = append(left.mask, right.mask);
+	return left;
 }
 
 vector<char> aload(int number) {
