@@ -12,11 +12,12 @@ void doSemanticStatementList(struct StatementList* stmtList);
 void doSemanticElseIf(struct ElseIfStatementList* elseIfList);
 void doSemanticExpression(struct Expression* expr);
 void doSemanticExpressionList(struct ExpressionList* exprList);
-void switch2if(struct SwitchStatement *switchStmt, struct Statement* parent);
+void switch2dowhile(struct SwitchStatement *switchStmt, struct Statement* parent);
 void toLowerCase(char* string);
 void checkSimpleExpression(struct Expression* expr);
 void checkForeachElement(struct Expression* element);
 void checkDefaultRepeat(struct SwitchStatement* switchStmt);
+struct Expression* setFVar(enum ExpressionType type, int value);
 
 void toLowerCase(char* string) {
 	int i = 0;
@@ -50,8 +51,17 @@ void doSemantic(void) {
 }
 
 void doSemanticFunction(struct FunctionDefinition* func) {
+	struct Statement* returnStmt = (struct Statement*)malloc(sizeof(struct Statement));
+	struct Statement* stmt;
 	toLowerCase(func->head->name);
 	doSemanticStatement(func->body);
+	for (stmt = func->body->compoundStmt->first; stmt != func->body->compoundStmt->last; stmt = stmt->next) {}
+	returnStmt->type = ST_RETURN;
+	returnStmt->expr = (struct Expression *)malloc(sizeof(struct Expression));
+	returnStmt->expr->type = ET_NULL;
+	stmt->next = returnStmt;
+	stmt->next->next = NULL;
+	func->body->compoundStmt->last = returnStmt;
 }
 
 void checkDefaultRepeat(struct SwitchStatement* switchStmt) {
@@ -77,7 +87,7 @@ void doSemanticStatement(struct Statement* stmt) {
 		switch (stmt->type) {
 			case ST_SWITCH:
 				checkDefaultRepeat(stmt->switchStmt);
-				//switch2if(stmt->switchStmt, stmt);
+				switch2dowhile(stmt->switchStmt, stmt);
 				break;
 			case ST_FOR:
 				doSemanticExpressionList(stmt->forStmt->initializer);
@@ -169,8 +179,10 @@ void doSemanticElseIf(struct ElseIfStatementList* elseIfList) {
 
 void doSemanticExpressionList(struct ExpressionList* exprList) {
 	struct Expression* expr;
-	for (expr = exprList->first; expr != NULL; expr = expr->next) {
-		doSemanticExpression(expr);
+	if (exprList != NULL) {
+		for (expr = exprList->first; expr != NULL; expr = expr->next) {
+			doSemanticExpression(expr);
+		}
 	}
 }
 
@@ -204,63 +216,115 @@ void doSemanticExpression(struct Expression* expr) {
 				checkSimpleExpression(expr->right);
 				break;
 		}
-	}
-	if (expr->left != NULL) {
-		doSemanticExpression(expr->left);
-	}
-	if (expr->right != NULL) {
-		doSemanticExpression(expr->right);
-	}
-	if (expr->rightExprList != NULL) {
-		doSemanticExpressionList(expr->rightExprList);
+		if (expr->left != NULL) {
+			doSemanticExpression(expr->left);
+		}
+		if (expr->right != NULL) {
+			doSemanticExpression(expr->right);
+		}
+		if (expr->rightExprList != NULL) {
+			doSemanticExpressionList(expr->rightExprList);
+		}
 	}
 }
 
-void switch2if(struct SwitchStatement *switchStmt, struct Statement* parent) {
-	//ÑÄÅËÀÒÜ ÏÐÎÂÅÐÊÓ ÍÀ BREAK
-	struct IfStatement* ifStmt = (struct IfStatement*)malloc(sizeof(struct IfStatement));
-	struct CaseStatements* cases = switchStmt->caseStmts;
-	struct CaseStatement* c = cases->first->next;
-	struct Expression* ifCondition = (struct Expression*)malloc(sizeof(struct Expression));
-	ifCondition->type = ET_EQUAL;
-	ifCondition->left = switchStmt->condition;
-	ifCondition->right = cases->first->label;
+void switch2dowhile(struct SwitchStatement *switchStmt, struct Statement* parent) {
+	struct StatementList* stmtList = (struct StatementList*)malloc(sizeof(struct StatementList));
+	struct Expression* switchCondition = switchStmt->condition;
+	struct WhileStatement* doWhile = (struct WhileStatement*)malloc(sizeof(struct WhileStatement));
+	struct CaseStatement* _case;
+	struct Statement* currentStmtDoWhile;
 
-	ifStmt->condition = ifCondition;
-	ifStmt->ifBlock = (struct Statement*)malloc(sizeof(struct Statement));
-	ifStmt->ifBlock->type = ST_COMPOUND;
-	ifStmt->ifBlock->compoundStmt = cases->first->stmtList;
-	ifStmt->elseIfBlock = NULL;
-	if (c != NULL && c->label != NULL) {
-		struct ElseIfStatementList* elseifs = (struct ElseIfStatementList*)malloc(sizeof(struct ElseIfStatementList));
-		int iter = 1;
-		for (; c != NULL && c->label != NULL; c = c->next, iter++) {
-			struct ElseIfStatement* elseIf = (struct ElseIfStatement*)malloc(sizeof(struct ElseIfStatement));
-			struct Expression* elseIfCondition = (struct Expression*)malloc(sizeof(struct Expression));
-			elseIfCondition->type = ET_EQUAL;
-			elseIfCondition->left = switchStmt->condition;
-			elseIfCondition->right = c->label;
-			elseIf->condition = elseIfCondition;
-			elseIf->elseIfBlock = (struct Statement*)malloc(sizeof(struct Statement));
-			elseIf->elseIfBlock->type = ST_COMPOUND;
-			elseIf->elseIfBlock->compoundStmt = c->stmtList;
-			if (iter == 1) {
-				elseifs->first = elseifs->last = elseIf;
-			} else {
-				elseifs->last->next = elseIf;
-				elseifs->last->next->next = NULL;
-				elseifs->last = elseIf;
-			}
+	doWhile->whileBlock = (struct Statement*)malloc(sizeof(struct Statement));
+	doWhile->whileBlock->type = ST_COMPOUND;
+	doWhile->whileBlock->compoundStmt = (struct StatementList*)malloc(sizeof(struct StatementList));
+	doWhile->whileBlock->compoundStmt->first = (struct Statement*)malloc(sizeof(struct Statement));
+	doWhile->condition = setFVar(ET_NOT_EQUAL_1, 1);
+
+	stmtList->first = (struct Statement*)malloc(sizeof(struct Statement));
+	stmtList->first->type = ST_EXPRESSION; 
+	stmtList->first->expr = setFVar(ET_ASSIGN, 0);
+
+	stmtList->first->next = (struct Statement*)malloc(sizeof(struct Statement));
+	stmtList->first->next->type = ST_WHILE;
+	stmtList->first->next->next = NULL;
+	stmtList->last = stmtList->first->next;
+	doWhile->type = WT_DO_WHILE;
+	doWhile->altWhileBlock = NULL;
+	
+	currentStmtDoWhile = doWhile->whileBlock->compoundStmt->first;
+	for (_case = switchStmt->caseStmts->first; _case != NULL; _case = _case->next) {
+		struct Statement* f1 = (struct Statement*)malloc(sizeof(struct Statement));
+		struct IfStatement* ifStmt = (struct IfStatement*)malloc(sizeof(struct IfStatement));
+		struct Statement* firstStmt = (struct Statement*)malloc(sizeof(struct Statement));
+		struct StatementList* stmtLoop = (struct StatementList*)malloc(sizeof(struct StatementList));
+
+		ifStmt->condition = (struct Expression*)malloc(sizeof(struct Expression));
+		ifStmt->ifBlock = (struct Statement*)malloc(sizeof(struct Statement));
+		ifStmt->ifBlock->type = ST_COMPOUND;
+		ifStmt->altIfBlock = NULL;
+		ifStmt->elseIfBlock = NULL;
+		ifStmt->elseBlock = NULL;
+		ifStmt->altElseBlock = NULL;
+
+		f1->type = ST_EXPRESSION; 
+		f1->expr = setFVar(ET_ASSIGN, 1);
+
+		if (_case->label != NULL) {
+			ifStmt->condition->type = ET_LOGIC_OR_1;
+			ifStmt->condition->left = (struct Expression*)malloc(sizeof(struct Expression));
+			ifStmt->condition->left->type = ET_EQUAL;
+			ifStmt->condition->left->left = switchCondition;
+			ifStmt->condition->left->right = _case->label;
+			ifStmt->condition->right = setFVar(ET_EQUAL, 1);
+		} else {
+			ifStmt->condition = setFVar(ET_GREATER_EQUAL, 1);
 		}
-		ifStmt->elseIfBlock = elseifs;
+		firstStmt->type = ST_EXPRESSION;
+		firstStmt->expr = setFVar(ET_ASSIGN, 1);
+		firstStmt->next = _case->stmtList->first;
+
+		stmtLoop->first = firstStmt;
+		stmtLoop->last = _case->stmtList->last;
+		ifStmt->ifBlock->compoundStmt = stmtLoop;
+
+		currentStmtDoWhile->type = ST_IF;
+		currentStmtDoWhile->ifStmt = ifStmt;
+
+		currentStmtDoWhile->next = (struct Statement*)malloc(sizeof(struct Statement));
+		currentStmtDoWhile = currentStmtDoWhile->next;
 	}
-	if (c != NULL && c->label == NULL) {
-		ifStmt->elseBlock = (struct Statement*)malloc(sizeof(struct Statement));
-		ifStmt->elseBlock->type = ST_COMPOUND;
-		ifStmt->elseBlock->compoundStmt = c->stmtList;
-	}
-	parent->type = ST_IF;
-	parent->ifStmt = ifStmt;
+	//currentStmtDoWhile = (struct Statement*)malloc(sizeof(struct Statement));
+	currentStmtDoWhile->type = ST_IF;
+	currentStmtDoWhile->ifStmt = (struct IfStatement*)malloc(sizeof(struct IfStatement));
+	currentStmtDoWhile->ifStmt->altIfBlock = NULL;
+	currentStmtDoWhile->ifStmt->elseBlock = NULL;
+	currentStmtDoWhile->ifStmt->elseIfBlock = NULL;
+	currentStmtDoWhile->ifStmt->altElseBlock = NULL;
+	currentStmtDoWhile->ifStmt->condition = setFVar(ET_EQUAL, 0);
+	currentStmtDoWhile->ifStmt->ifBlock = (struct Statement*)malloc(sizeof(struct Statement));
+	currentStmtDoWhile->ifStmt->ifBlock->type = ST_EXPRESSION;
+	currentStmtDoWhile->ifStmt->ifBlock->expr = setFVar(ET_ASSIGN, 2);
+	currentStmtDoWhile->next = NULL;
+	doWhile->whileBlock->compoundStmt->last = currentStmtDoWhile;
+
+	stmtList->first->next->whileStmt = doWhile;
+	parent->compoundStmt = stmtList;
+	parent->type = ST_COMPOUND;
 	free(parent->switchStmt);
 	parent->switchStmt = NULL;
+}
+
+struct Expression* setFVar(enum ExpressionType type, int value) {
+	struct Expression* expr = (struct Expression*)malloc(sizeof(struct Expression));
+	expr->type = type;
+	expr->left = (struct Expression*)malloc(sizeof(struct Expression));
+	expr->left->type = ET_DOLLAR;
+	expr->left->right = (struct Expression*)malloc(sizeof(struct Expression));
+	expr->left->right->type = ET_ID;
+	expr->left->right->stringValue = "___F___";
+	expr->right = (struct Expression*)malloc(sizeof(struct Expression));
+	expr->right->type = ET_INT;
+	expr->right->intValue = value;
+	return expr;
 }
