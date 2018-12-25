@@ -75,8 +75,10 @@ public:
 					}
 
 					if(j == s.size()) {
-						buf2.pb('\n');
+						buf2.pb('\\');
+						buf2.pb('n');
 						getline(cin, s);
+						j = 0;
 						continue;
 					}
 
@@ -1151,11 +1153,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			for (auto itf = body->child[1]->child.begin(); itf != body->child[1]->child.end(); ++itf) {
 				bytecode = append(bytecode, getBytecode(phpClass, method, (*itf)));
 			}
-			if (phpClass->methods[funcName] != NULL) {
-				bytecode = append(bytecode, invokestatic(phpClass->methods[funcName]->methodrefConstantNumber));
-			} else {
-				bytecode = append(bytecode, invokestatic(0));
-			}
+			bytecode = append(bytecode, invokestatic(phpClass->methods[funcName]->methodrefConstantNumber));
 		}
 		return bytecode;
 	}
