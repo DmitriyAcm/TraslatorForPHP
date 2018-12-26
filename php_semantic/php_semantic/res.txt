@@ -9,55 +9,44 @@ ___Base___
 8 NAME_AND_TYPE --- 6,7
 9 METHOD_REF --- 5,8
 10 UTF8 --- this
-11 UTF8 --- ___lesser___
-12 UTF8 --- (Ljava/lang/Object;)Z
+11 UTF8 --- main
+12 UTF8 --- ([Ljava/lang/String;)V
 13 NAME_AND_TYPE --- 11,12
-14 UTF8 --- rtl/BaseType
-15 CLASS --- 14
-16 METHOD_REF --- 15,13
-17 UTF8 --- ___add___
-18 UTF8 --- (Ljava/lang/Object;)Lrtl/BaseType;
-19 NAME_AND_TYPE --- 17,18
-20 METHOD_REF --- 15,19
-21 UTF8 --- ___sub___
-22 NAME_AND_TYPE --- 21,18
-23 METHOD_REF --- 15,22
-24 UTF8 --- ___lesserEqual___
-25 NAME_AND_TYPE --- 24,12
-26 METHOD_REF --- 15,25
-27 UTF8 --- ___concat___
-28 NAME_AND_TYPE --- 27,18
-29 METHOD_REF --- 15,28
-30 UTF8 --- main
-31 UTF8 --- ([Ljava/lang/String;)V
-32 NAME_AND_TYPE --- 30,31
-33 METHOD_REF --- 3,32
-34 UTF8 --- [Ljava/lang/String;
-35 UTF8 --- args
-36 UTF8 --- fibonacci
-37 UTF8 --- n
-38 UTF8 --- (I)V
-39 NAME_AND_TYPE --- 6,38
-40 UTF8 --- rtl/IntType
-41 CLASS --- 40
-42 METHOD_REF --- 41,39
-43 UTF8 --- NULL
-44 UTF8 --- (Ljava/lang/String;)V
-45 NAME_AND_TYPE --- 6,44
-46 UTF8 --- rtl/StringType
-47 CLASS --- 46
-48 METHOD_REF --- 47,45
-49 UTF8 ---  number is 
-50 INT --- 49
-51 UTF8 --- (Lrtl/BaseType;)Lrtl/BaseType;
-52 NAME_AND_TYPE --- 36,51
-53 METHOD_REF --- 3,52
-54 UTF8 --- ___echo___
-55 UTF8 --- (Ljava/lang/Object;)V
-56 NAME_AND_TYPE --- 54,55
-57 UTF8 --- rtl/IO
-58 CLASS --- 57
-59 METHOD_REF --- 58,56
+14 METHOD_REF --- 3,13
+15 UTF8 --- [Ljava/lang/String;
+16 UTF8 --- args
+17 UTF8 --- (I)V
+18 NAME_AND_TYPE --- 6,17
+19 UTF8 --- rtl/IntType
+20 CLASS --- 19
+21 METHOD_REF --- 20,18
+22 UTF8 --- true
+23 UTF8 --- false
+24 UTF8 --- rtl/BaseType
+25 CLASS --- 24
+c
+1 UTF8 --- Code
+2 UTF8 --- c
+3 CLASS --- 2
+4 UTF8 --- java/lang/Object
+5 CLASS --- 4
+6 UTF8 --- a
+7 UTF8 --- foo
+8 UTF8 --- this
+9 UTF8 --- ()Lrtl/BaseType;
+10 NAME_AND_TYPE --- 7,9
+11 METHOD_REF --- 3,10
+12 UTF8 --- <init>
+13 UTF8 --- ()V
+14 NAME_AND_TYPE --- 12,13
+15 METHOD_REF --- 5,14
+16 UTF8 --- Lrtl/BaseType;
+17 NAME_AND_TYPE --- 6,16
+18 FIELD_REF --- 3,17
+19 NAME_AND_TYPE --- 2,16
+20 FIELD_REF --- 3,19
+21 UTF8 --- rtl/BaseType
+22 CLASS --- 21
 
 ___Base___
 
@@ -65,25 +54,25 @@ ___Base___
 
 0 this 10 2
 
-fibonacci
-
-0 n 37 14
-
 main
 
-0 args 35 34
-1 n 37 14
+0 args 16 15
+
+c
+
+<init>
+
+0 this 8 2
+
+foo
+
+0 this 8 2
 
 ////////////////////////////////////////////////////////////////////////////////////OPERATORS////////////////////////////////////////////////////////////////////////////////////
 ___Base___
 
-I<init> 42
-S<init> 48
-___add___ 20
-___concat___ 29
-___echo___ 59
-___lesserEqual___ 26
-___lesser___ 16
-___sub___ 23
-fibonacci 53
+I<init> 21
+
+c
+
 

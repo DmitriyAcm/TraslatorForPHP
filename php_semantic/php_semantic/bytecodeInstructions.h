@@ -144,6 +144,17 @@ vector<char> invokevirtual(int methodRef) {
 	return result;
 }
 
+vector<char> invokeinterface(int methodRef) {
+	vector<char> result = vector<char>();
+	
+	result.push_back(0xB9);
+	vector<char> mr = get_u2(methodRef);
+	result = append(result, mr);
+	result.push_back(1);
+	result.push_back(0);
+	return result;
+}
+
 vector<char> ldc(int constant) {
 	vector<char> result = vector<char>();
 	result.push_back(0x12);

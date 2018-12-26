@@ -75,8 +75,9 @@ public:
 					}
 
 					if(j == s.size()) {
-						buf2.pb('\\');
-						buf2.pb('n');
+						/*buf2.pb('\\');
+						buf2.pb('n');*/
+						buf2.pb('\n');
 						getline(cin, s);
 						j = 0;
 						continue;
@@ -360,15 +361,15 @@ class FinderOper {
 
 		} else if (node->label == "Foreach Statement") {
 			name = "___iterator___";
-			id = curClass->putRef(name, "rtl/Array", ConstantType::METHOD_REF, "()Ljava/util/Iterator;", ConstantType::UTF8);
+			id = curClass->putRef("iterator", "rtl/Array", ConstantType::METHOD_REF, "()Ljava/util/Iterator;", ConstantType::UTF8);
 			curClass->operators[name] = id;
 
 			name = "___hasNext___";
-			id = curClass->putRef(name, "java/util/Iterator", ConstantType::INTERFACE_METHOD_REF, "()Z", ConstantType::UTF8);
+			id = curClass->putRef("hasNext", "java/util/Iterator", ConstantType::INTERFACE_METHOD_REF, "()Z", ConstantType::UTF8);
 			curClass->operators[name] = id;
 
 			name = "___next___";
-			id = curClass->putRef(name, "java/util/Iterator", ConstantType::INTERFACE_METHOD_REF, "()Ljava/lang/Object;", ConstantType::UTF8);
+			id = curClass->putRef("next", "java/util/Iterator", ConstantType::INTERFACE_METHOD_REF, "()Ljava/lang/Object;", ConstantType::UTF8);
 			curClass->operators[name] = id;
 		}
 		if(id != -1) {
@@ -725,7 +726,7 @@ void FillTables(Node* node) {
 						prop->isStatic = isStat;
 						prop->isConst = isConst;
 
-						prop->fieldrefConstantNumber = curClass->putRef(var->child[0]->label, curClass->name, ConstantType::FIELD_REF, OBJECT, ConstantType::UTF8);
+						prop->fieldrefConstantNumber = curClass->putRef(var->child[0]->label, curClass->name, ConstantType::FIELD_REF, "Lrtl/BaseType;", ConstantType::UTF8);
 
 						curClass->properties[var->child[0]->label] = prop;
 					}
@@ -818,6 +819,12 @@ void printTableConstant(vector<PHPConstant*>& tc) {
 			printBytes(get_u2((int)(*data)));
 			printBytes(get_u2((int)(*(data+1))));
 			break;
+		case ConstantType::INTERFACE_METHOD_REF:
+			printf("%c", 0x0B);
+			data = (int**)tc[i]->value;
+			printBytes(get_u2((int)(*data)));
+			printBytes(get_u2((int)(*(data+1))));
+			break;
 		case ConstantType::FIELD_REF:
 			printf("%c", 0x09);
 			data = (int**)tc[i]->value;
@@ -846,6 +853,24 @@ void printAccessFlags(PHPMethod* method) {
 	printf("%c", res);
 }
 
+void printAccessFlagsProp(PHPProperty* prop) {
+	int res;
+	prop->isStatic ? res = 0x08 : res = 0x00;
+	switch (prop->accessLevel) {
+	case AccessLevel::PRIVATE:
+		res |= 0x02;
+		break;
+	case AccessLevel::PROTECTED:
+		res |= 0x04;
+		break;
+	case AccessLevel::PUBLIC:
+		res |= 0x01;
+		break;
+	}
+	printf("%c", 0x00);
+	printf("%c", res);
+}
+
 ByteCode getDefaultConstructor() {
 	vector<char> bytecode;
 	bytecode.push_back(0x2A);
@@ -855,6 +880,8 @@ ByteCode getDefaultConstructor() {
 	bytecode.push_back(0xB1);
 	return ByteCode(bytecode);
 }
+
+long long FOREACH_DEPTH = 0;
 
 ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	/* */
@@ -903,6 +930,34 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, body1);
 		bytecode = append(bytecode, ifblock);
 
+		return bytecode;
+	}
+	if (body->label == "Foreach Statement") {
+		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->child[0]->label);
+		int posArray = it - method->sequenceLocalVariables.begin();
+		bytecode = append(bytecode, aload(posArray));
+		bytecode = append(bytecode, invokevirtual(phpClass->operators["___iterator___"]));
+		it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), "___ITER" + to_string((++FOREACH_DEPTH)) + "___");
+		int posIter = it - method->sequenceLocalVariables.begin();
+		bytecode = append(bytecode, astore(posIter));
+		ByteCode whileBlock = aload(posIter);
+		whileBlock = append(whileBlock, invokeinterface(phpClass->operators["___hasNext___"]));
+		whileBlock = append(whileBlock, ifeq());
+		ByteCode blockLoop = aload(posIter);
+		blockLoop = append(blockLoop, invokeinterface(phpClass->operators["___next___"]));
+		blockLoop = append(blockLoop, checkcast(phpClass->BaseType));
+		it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[1]->child[0]->child[0]->label);
+		int posItem = it - method->sequenceLocalVariables.begin();
+		blockLoop = append(blockLoop, astore(posItem));
+		blockLoop = append(blockLoop, getBytecode(phpClass, method, body->child[2]));
+		int gotoShift = -(whileBlock.size() + blockLoop.size() + 2);
+		blockLoop = append(blockLoop, _goto());
+		blockLoop = append(blockLoop, get_s2(gotoShift));
+		int ifeqShift = blockLoop.size() + 3;
+		whileBlock = append(whileBlock, get_s2(ifeqShift));
+		whileBlock = append(whileBlock, blockLoop);
+		bytecode = append(bytecode, whileBlock);
+		FOREACH_DEPTH--;
 		return bytecode;
 	}
 	if (body->label == "For Statement") {
@@ -1032,6 +1087,23 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			//return bytecode;
 		}
 
+		return bytecode;
+	}
+	if (body->label == "and" || body->label == "&&") {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
+		bytecode = append(bytecode, invokestatic(phpClass->operators["___and___"]));
+		return bytecode;
+	}
+	if (body->label == "or" || body->label == "||") {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
+		bytecode = append(bytecode, invokestatic(phpClass->operators["___or___"]));
+		return bytecode;
+	}
+	if (body->label == "!") {
+		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
+		bytecode = append(bytecode, invokestatic(phpClass->operators["___not___"]));
 		return bytecode;
 	}
 	if (body->label == "+") {
@@ -1320,6 +1392,19 @@ void printCode(PHPClass* phpClass, PHPMethod* method) {
 	printBytes(get_u2(0)); //attrs
 }
 
+void printFields(PHPClass* phpClass, map<string, PHPProperty*>& props) {
+	for (auto it = props.begin(); it != props.end(); ++it) {
+		printAccessFlagsProp(it->second);
+		PHPConstant* frconst = phpClass->constantTable.at(it->second->fieldrefConstantNumber);
+		int** datafr = (int**)frconst->value;
+		PHPConstant* ntconst = phpClass->constantTable.at((int)*(datafr+1));
+		int** datant = (int**)ntconst->value;
+		printBytes(get_u2((int)*(datant))); //name_index
+		printBytes(get_u2((int)*(datant+1))); //descriptor_index
+		printBytes(get_u2(0)); //attributes_count
+	}
+}
+
 void printMethods(PHPClass* phpClass, map<string, PHPMethod*>& methods) {
 	for (auto it = methods.begin(); it != methods.end(); ++it) {
 		printAccessFlags(it->second); 
@@ -1347,7 +1432,8 @@ void codeGeneration() {
 		printBytes(get_u2(it->second->classConstantNumber)); // this class
 		printBytes(get_u2(it->second->parent)); // parent class
 		printBytes(get_u2(0)); //interfaces
-		printBytes(get_u2(0)); //fields
+		printBytes(get_u2(it->second->properties.size())); //fields
+		printFields(it->second, it->second->properties);
 		printBytes(get_u2(it->second->methods.size())); //methods
 		printMethods(it->second, it->second->methods);
 		printBytes(get_u2(0)); //attributes
@@ -1422,7 +1508,7 @@ string toStr[] = {
 	"CLASS",
 	"NAME_AND_TYPE",
 	"METHOD_REF",
-	"INTERFACE_METHOD_REF"
+	"INTERFACE_METHOD_REF",
 	"FIELD_REF",
 	"STRING",
 	"INT",
