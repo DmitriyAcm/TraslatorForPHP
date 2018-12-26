@@ -359,6 +359,10 @@ class FinderOper {
 			name = "___concat___";
 			id = curClass->putRef(name, OBJECT, ConstantType::METHOD_REF, "(Ljava/lang/Object;)Lrtl/BaseType;", ConstantType::UTF8);
 
+		} else if (node->label == "true" || node->label == "false") {
+			name = "Boolean.valueOf";
+			id = curClass->putRef("valueOf", "java/lang/Boolean", ConstantType::METHOD_REF, "(Z)Ljava/lang/Boolean;", ConstantType::UTF8);
+
 		} else if (node->label == "Foreach Statement") {
 			name = "___iterator___";
 			id = curClass->putRef("iterator", "rtl/Array", ConstantType::METHOD_REF, "()Ljava/util/Iterator;", ConstantType::UTF8);
@@ -933,11 +937,11 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		return bytecode;
 	}
 	if (body->label == "Foreach Statement") {
-		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->child[0]->label);
-		int posArray = it - method->sequenceLocalVariables.begin();
-		bytecode = append(bytecode, aload(posArray));
+		/*auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->child[0]->label);
+		int posArray = it - method->sequenceLocalVariables.begin();*/
+		bytecode = append(bytecode, getBytecode(phpClass,method, body->child[0]));
 		bytecode = append(bytecode, invokevirtual(phpClass->operators["___iterator___"]));
-		it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), "___ITER" + to_string((++FOREACH_DEPTH)) + "___");
+		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), "___ITER" + to_string((++FOREACH_DEPTH)) + "___");
 		int posIter = it - method->sequenceLocalVariables.begin();
 		bytecode = append(bytecode, astore(posIter));
 		ByteCode whileBlock = aload(posIter);
@@ -1266,6 +1270,24 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, pint);
 		ByteCode iv = invokespecial(phpClass->operators["I<init>"]);
 		bytecode = append(bytecode, iv);
+	} else if (body->label == "true") {
+		/*PHPConstant* mr = phpClass->constantTable[phpClass->operators["I<init>"]];
+		int classConst = (int)(*(int**)mr->value);
+		bytecode = _new(classConst);
+		bytecode = append(bytecode, dup());*/
+		bytecode = append(bytecode, pushIntConstant(1));
+		bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
+		//bytecode = append(bytecode, invokespecial(phpClass->operators["I<init>"]));
+		return bytecode;
+	} else if (body->label == "false") {
+		/*PHPConstant* mr = phpClass->constantTable[phpClass->operators["I<init>"]];
+		int classConst = (int)(*(int**)mr->value);
+		bytecode = _new(classConst);
+		bytecode = append(bytecode, dup());*/
+		bytecode = append(bytecode, pushIntConstant(0));
+		bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
+		/*bytecode = append(bytecode, invokespecial(phpClass->operators["I<init>"]));*/
+		return bytecode;
 	} else if (body->label == "$") {
 		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->label);
 		int pos = it - method->sequenceLocalVariables.begin();
