@@ -28,7 +28,7 @@ public:
 				vector<char> curEnd = get_u2(index - i + 1);
 				code[i] = curEnd[0];
 				++i;
-				code[i + 1] = curEnd[1];
+				code[i] = curEnd[1];
 			}
 		}
 	}

@@ -887,6 +887,15 @@ ByteCode getDefaultConstructor() {
 
 long long FOREACH_DEPTH = 0;
 
+int curBlockCycle = 0;
+
+int CONTINUE_CONST = 64;
+
+void initCycleGoto(ByteCode& bytecode, int shiftContinue) {
+	bytecode.SetGOTO(curBlockCycle, bytecode.size());
+	bytecode.SetGOTO(curBlockCycle + CONTINUE_CONST, shiftContinue);
+}
+
 ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	/* */
 	ByteCode bytecode;
@@ -904,6 +913,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		return bytecode;
 	}
 	if (body->label == "While Statement") {
+		++curBlockCycle;
 		ByteCode ifblock = getBytecode(phpClass, method, body->child[0]);
 		ifblock = append(ifblock, ifeq());
 
@@ -920,9 +930,13 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, ifblock);
 		bytecode = append(bytecode, body1);
 
+		initCycleGoto(bytecode, 0);
+
+		--curBlockCycle;
 		return bytecode;
 	}
 	if (body->label == "Do-While Statement") {
+		++curBlockCycle;
 		ByteCode ifblock = getBytecode(phpClass, method, body->child[0]);
 		ifblock = append(ifblock, ifne());
 
@@ -934,9 +948,13 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, body1);
 		bytecode = append(bytecode, ifblock);
 
+		initCycleGoto(bytecode, body1.size());
+
+		--curBlockCycle;
 		return bytecode;
 	}
 	if (body->label == "Foreach Statement") {
+		++curBlockCycle;
 		/*auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), body->child[0]->child[0]->child[0]->label);
 		int posArray = it - method->sequenceLocalVariables.begin();*/
 		bytecode = append(bytecode, getBytecode(phpClass,method, body->child[0]));
@@ -944,6 +962,9 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(), "___ITER" + to_string((++FOREACH_DEPTH)) + "___");
 		int posIter = it - method->sequenceLocalVariables.begin();
 		bytecode = append(bytecode, astore(posIter));
+
+		int shiftContinue = bytecode.size();
+
 		ByteCode whileBlock = aload(posIter);
 		whileBlock = append(whileBlock, invokeinterface(phpClass->operators["___hasNext___"]));
 		whileBlock = append(whileBlock, ifeq());
@@ -961,13 +982,20 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		whileBlock = append(whileBlock, get_s2(ifeqShift));
 		whileBlock = append(whileBlock, blockLoop);
 		bytecode = append(bytecode, whileBlock);
+
+		initCycleGoto(bytecode, shiftContinue);
+
 		FOREACH_DEPTH--;
+		--curBlockCycle;
 		return bytecode;
 	}
 	if (body->label == "For Statement") {
+		++curBlockCycle;
 		for(int i = 0; i < body->child[0]->child.size(); ++i) {
 			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]->child[i]));
 		}
+
+		int shiftContinue = bytecode.size();
 
 		ByteCode ifblock = getBytecode(phpClass, method, body->child[1]->child[0]);
 		ifblock = append(ifblock, ifeq());
@@ -989,6 +1017,21 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, ifblock);
 		bytecode = append(bytecode, body1);
 
+		initCycleGoto(bytecode, shiftContinue);
+
+		--curBlockCycle;
+		return bytecode;
+	}
+	if (body->label == "Break") {
+		bytecode = append(bytecode, _goto());
+		ByteCode cur(get_s2(0), curBlockCycle);
+		bytecode = append(bytecode, cur);
+		return bytecode;
+	}
+	if (body->label == "Continue") {
+		bytecode = append(bytecode, _goto());
+		ByteCode cur(get_s2(0), curBlockCycle + CONTINUE_CONST);
+		bytecode = append(bytecode, cur);
 		return bytecode;
 	}
 	if (body->label == "If Statement") {
