@@ -286,3 +286,10 @@ vector<char> areturn() {
 	result.push_back(0xB0);
 	return result;
 }
+
+vector<char> _instanceof(int classConst) {
+	vector<char> result = vector<char>();
+	result.push_back(0xC1);
+	result = append(result, get_u2(classConst));
+	return result;
+}

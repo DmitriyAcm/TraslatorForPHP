@@ -424,6 +424,7 @@ private:
 		curClass->operators["___getkey___"] = curClass->putRef("___get___", "rtl/Array", ConstantType::METHOD_REF, "(Lrtl/BaseType;)Lrtl/BaseType;", ConstantType::UTF8);
 		curClass->operators["___get___"] = curClass->putRef("___get___", "rtl/Array", ConstantType::METHOD_REF, "()Lrtl/BaseType;", ConstantType::UTF8);
 		curClass->operators["Array<init>"] = curClass->putRef("<init>", "rtl/Array", ConstantType::METHOD_REF, "([Lrtl/Pair;)V", ConstantType::UTF8);
+		curClass->operators["ArrayCopy<init>"] = curClass->putRef("<init>", "rtl/Array", ConstantType::METHOD_REF, "(Lrtl/Array;)V", ConstantType::UTF8);
 		curClass->operators["Pair2<init>"] = curClass->putRef("<init>", "rtl/Pair", ConstantType::METHOD_REF, "(Lrtl/BaseType;Lrtl/BaseType;)V", ConstantType::UTF8);
 		curClass->operators["Pair1<init>"] = curClass->putRef("<init>", "rtl/Pair", ConstantType::METHOD_REF, "(Lrtl/BaseType;)V", ConstantType::UTF8);
 	}
@@ -1341,6 +1342,23 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		} else {
 			for (auto itf = body->child[1]->child.begin(); itf != body->child[1]->child.end(); ++itf) {
 				bytecode = append(bytecode, getBytecode(phpClass, method, (*itf)));
+				if ((*itf)->label == "$"){
+					PHPConstant* mr = phpClass->constantTable[phpClass->operators["Array<init>"]];
+					int classConstArray = (int)(*(int**)mr->value);
+					bytecode = append(bytecode, dup());
+					bytecode = append(bytecode, _instanceof(classConstArray));
+					bytecode = append(bytecode, ifeq());
+					ByteCode ob = _new(classConstArray);
+					ob = append(ob, dup());
+					auto it = find(method->sequenceLocalVariables.begin(), method->sequenceLocalVariables.end(),(*itf)->child[0]->child[0]->label);
+					int pos = it - method->sequenceLocalVariables.begin();
+					ob = append(ob, aload(pos));
+					ob = append(ob, invokevirtual(phpClass->operators["ArrayCopy<init>"]));
+					int shift = ob.size() + 3;
+					bytecode = append(bytecode, get_s2(shift));
+					bytecode = append(bytecode, ob);
+				}
+
 			}
 			bytecode = append(bytecode, invokestatic(phpClass->methods[funcName]->methodrefConstantNumber));
 		}
