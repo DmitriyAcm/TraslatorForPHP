@@ -1184,6 +1184,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	}
 	if (body->label == "or" || body->label == "||") {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
+		
 		string leftOp = body->child[0]->label;
 		if (leftOp == "and" || leftOp == "&&" ||
 			leftOp == "or" ||leftOp == "||" || leftOp == "!" ||
@@ -1191,6 +1192,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			leftOp == "<" || leftOp == "<=" ||
 			leftOp == "!=" || leftOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
+
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
 		string rightOp = body->child[1]->label;
 		if (rightOp == "and" || rightOp == "&&" ||
@@ -1199,7 +1201,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			rightOp == "<" || rightOp == "<=" ||
 			rightOp == "!=" || rightOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
-		bytecode = append(bytecode, invokestatic(phpClass->operators["___or___"]));;
+		bytecode = append(bytecode, invokestatic(phpClass->operators["___or___"]));
 		return bytecode;
 	}
 	if (body->label == "!") {
