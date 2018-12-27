@@ -1342,7 +1342,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		} else {
 			for (auto itf = body->child[1]->child.begin(); itf != body->child[1]->child.end(); ++itf) {
 				bytecode = append(bytecode, getBytecode(phpClass, method, (*itf)));
-				if ((*itf)->label == "$"){
+				if ((*itf)->label == "$" && phpClass->operators["Array<init>"] != 0){
 					PHPConstant* mr = phpClass->constantTable[phpClass->operators["Array<init>"]];
 					int classConstArray = (int)(*(int**)mr->value);
 					bytecode = append(bytecode, dup());
