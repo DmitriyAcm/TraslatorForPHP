@@ -1571,9 +1571,32 @@ void codeGeneration() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+void NumVariableSwitch(Node* node, int curDoWhile = 0) {
+	if(node->label == "___F___") {
+		node->label.erase(4,3);
+		node->label += to_string((long long)curDoWhile);
+		node->label += "___";
+	}
+
+	if(node->label == "___FF___") {
+		node->label.erase(4,4);
+		node->label += to_string((long long)curDoWhile + 1);
+		node->label += "___";
+	}
+
+	curDoWhile += node->label == "Do-While Statement";
+
+	for(auto it = node->child.begin(); it != node->child.end(); ++it) {
+		NumVariableSwitch(*it, curDoWhile);
+	}
+}
+
 void main() {
 	ParseTree tree("finalTree.dot");
 	Node* root = tree.parse();
+
+	NumVariableSwitch(root);
+	////////////////////////////////////////////////////////////////////////////////////////////
 
 	root = root->child[0];
 
