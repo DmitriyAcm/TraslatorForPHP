@@ -83,9 +83,13 @@ void checkDefaultRepeat(struct SwitchStatement* switchStmt) {
 }
 
 void doSemanticStatement(struct Statement* stmt) {
+	struct CaseStatement* stmtCase;
 	if (stmt != NULL) {
 		switch (stmt->type) {
 			case ST_SWITCH:
+				for (stmtCase = stmt->switchStmt->caseStmts->first; stmtCase != NULL; stmtCase = stmtCase->next) {
+					doSemanticStatementList(stmtCase->stmtList);
+				}
 				checkDefaultRepeat(stmt->switchStmt);
 				switch2dowhile(stmt->switchStmt, stmt);
 				break;
