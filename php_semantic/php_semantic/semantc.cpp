@@ -367,21 +367,21 @@ class FinderOper {
 			name = "___and___";
 			id = curClass->putRef("valueOf", "java/lang/Boolean", ConstantType::METHOD_REF, "(Z)Ljava/lang/Boolean;", ConstantType::UTF8);
 			curClass->operators["Boolean.valueOf"] = id;
-			id = curClass->putRef(name, "rtl/Logic", ConstantType::METHOD_REF, "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;", ConstantType::UTF8);
+			id = curClass->putRef(name, "rtl/Logic", ConstantType::METHOD_REF, "(Ljava/lang/Object;Ljava/lang/Object;)Z", ConstantType::UTF8);
 			curClass->operators[name] = id;
 
 		} else if (node->label == "or" || node->label == "||") {
 			name = "___or___";
 			id = curClass->putRef("valueOf", "java/lang/Boolean", ConstantType::METHOD_REF, "(Z)Ljava/lang/Boolean;", ConstantType::UTF8);
 			curClass->operators["Boolean.valueOf"] = id;
-			id = curClass->putRef(name, "rtl/Logic", ConstantType::METHOD_REF, "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;", ConstantType::UTF8);
+			id = curClass->putRef(name, "rtl/Logic", ConstantType::METHOD_REF, "(Ljava/lang/Object;Ljava/lang/Object;)Z", ConstantType::UTF8);
 			curClass->operators[name] = id;
 
 		} else if (node->label == "!") {
 			id = curClass->putRef("valueOf", "java/lang/Boolean", ConstantType::METHOD_REF, "(Z)Ljava/lang/Boolean;", ConstantType::UTF8);
 			curClass->operators["Boolean.valueOf"] = id;
 			name = "___not___";
-			id = curClass->putRef(name, "rtl/Logic", ConstantType::METHOD_REF, " (Ljava/lang/Object;)Ljava/lang/Boolean;", ConstantType::UTF8);
+			id = curClass->putRef(name, "rtl/Logic", ConstantType::METHOD_REF, " (Ljava/lang/Object;)Z", ConstantType::UTF8);
 			curClass->operators[name] = id;
 
 		} else if (node->label == "Foreach Statement") {
@@ -1164,13 +1164,17 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body->label == "and" || body->label == "&&") {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		string leftOp = body->child[0]->label;
-		if (leftOp == ">" || leftOp == ">=" ||
+		if (leftOp == "and" || leftOp == "&&" ||
+			leftOp == "or" ||leftOp == "||" || leftOp == "!" ||
+			leftOp == ">" || leftOp == ">=" ||
 			leftOp == "<" || leftOp == "<=" ||
 			leftOp == "!=" || leftOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
 		string rightOp = body->child[1]->label;
-		if (rightOp == ">" || rightOp == ">=" ||
+		if (rightOp == "and" || rightOp == "&&" ||
+			rightOp == "or" ||rightOp == "||" || rightOp == "!" ||
+			rightOp == ">" || rightOp == ">=" ||
 			rightOp == "<" || rightOp == "<=" ||
 			rightOp == "!=" || rightOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
@@ -1180,13 +1184,17 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body->label == "or" || body->label == "||") {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		string leftOp = body->child[0]->label;
-		if (leftOp == ">" || leftOp == ">=" ||
+		if (leftOp == "and" || leftOp == "&&" ||
+			leftOp == "or" ||leftOp == "||" || leftOp == "!" ||
+			leftOp == ">" || leftOp == ">=" ||
 			leftOp == "<" || leftOp == "<=" ||
 			leftOp == "!=" || leftOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
 		string rightOp = body->child[1]->label;
-		if (rightOp == ">" || rightOp == ">=" ||
+		if (rightOp == "and" || rightOp == "&&" ||
+			rightOp == "or" ||rightOp == "||" || rightOp == "!" ||
+			rightOp == ">" || rightOp == ">=" ||
 			rightOp == "<" || rightOp == "<=" ||
 			rightOp == "!=" || rightOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
@@ -1196,7 +1204,9 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body->label == "!") {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		string leftOp = body->child[0]->label;
-		if (leftOp == ">" || leftOp == ">=" ||
+		if (leftOp == "and" || leftOp == "&&" ||
+			leftOp == "or" ||leftOp == "||" || leftOp == "!" ||
+			leftOp == ">" || leftOp == ">=" ||
 			leftOp == "<" || leftOp == "<=" ||
 			leftOp == "!=" || leftOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
