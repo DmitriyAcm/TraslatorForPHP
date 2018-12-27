@@ -269,7 +269,7 @@ PHPConstant* PHPConstant::getConstant(const string& name, PHPClass* cls) {
 		return new PHPConstant(ConstantType::STRING, new int(cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(cur)))));
 
 	} else if(name.find('.') != string::npos) {
-		cls->operators["D<init>"] = cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(D)V", ConstantType::UTF8);
+		cls->operators["D<init>"] = cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(F)V", ConstantType::UTF8);
 		return new PHPConstant(ConstantType::FLOAT, new float(atof(name.c_str())));
 
 	} else if(name[0] >= '0' && name[0] <= '9') {
@@ -1165,7 +1165,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		string leftOp = body->child[0]->label;
 		if (leftOp == "and" || leftOp == "&&" ||
-			leftOp == "or" || leftOp == "||" ||  leftOp == "!" ||
+			leftOp == "or" ||leftOp == "||" || leftOp == "!" ||
 			leftOp == ">" || leftOp == ">=" ||
 			leftOp == "<" || leftOp == "<=" ||
 			leftOp == "!=" || leftOp == "==")
@@ -1173,7 +1173,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
 		string rightOp = body->child[1]->label;
 		if (rightOp == "and" || rightOp == "&&" ||
-			rightOp == "or" || rightOp == "||" ||  rightOp == "!" ||
+			rightOp == "or" ||rightOp == "||" || rightOp == "!" ||
 			rightOp == ">" || rightOp == ">=" ||
 			rightOp == "<" || rightOp == "<=" ||
 			rightOp == "!=" || rightOp == "==")
@@ -1185,7 +1185,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		string leftOp = body->child[0]->label;
 		if (leftOp == "and" || leftOp == "&&" ||
-			leftOp == "or" || leftOp == "||" || leftOp == "!" ||
+			leftOp == "or" ||leftOp == "||" || leftOp == "!" ||
 			leftOp == ">" || leftOp == ">=" ||
 			leftOp == "<" || leftOp == "<=" ||
 			leftOp == "!=" || leftOp == "==")
@@ -1193,7 +1193,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[1]));
 		string rightOp = body->child[1]->label;
 		if (rightOp == "and" || rightOp == "&&" ||
-			rightOp == "or" || rightOp == "||" || rightOp == "!" ||
+			rightOp == "or" ||rightOp == "||" || rightOp == "!" ||
 			rightOp == ">" || rightOp == ">=" ||
 			rightOp == "<" || rightOp == "<=" ||
 			rightOp == "!=" || rightOp == "==")
@@ -1205,7 +1205,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]));
 		string leftOp = body->child[0]->label;
 		if (leftOp == "and" || leftOp == "&&" ||
-			leftOp == "or" || leftOp == "||" || leftOp == "!" ||
+			leftOp == "or" ||leftOp == "||" || leftOp == "!" ||
 			leftOp == ">" || leftOp == ">=" ||
 			leftOp == "<" || leftOp == "<=" ||
 			leftOp == "!=" || leftOp == "==")
