@@ -1179,6 +1179,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			rightOp == "!=" || rightOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 		bytecode = append(bytecode, invokestatic(phpClass->operators["___and___"]));
+		//bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 		return bytecode;
 	}
 	if (body->label == "or" || body->label == "||") {
@@ -1199,6 +1200,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			rightOp == "!=" || rightOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 		bytecode = append(bytecode, invokestatic(phpClass->operators["___or___"]));
+		bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 		return bytecode;
 	}
 	if (body->label == "!") {
@@ -1211,6 +1213,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			leftOp == "!=" || leftOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 		bytecode = append(bytecode, invokestatic(phpClass->operators["___not___"]));
+		bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 		return bytecode;
 	}
 	if (body->label == "+") {
@@ -1309,6 +1312,12 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 	if (body->label == "Echo") {
 		for (auto it = body->child[0]->child.begin(); it != body->child[0]->child.end(); ++it) {
 			bytecode = append(bytecode, getBytecode(phpClass, method, (*it)));
+			if ((*it)->label == "and" ||  (*it)->label == "&&" || 
+				(*it)->label == "or" ||  (*it)->label == "||" ||  (*it)->label == "!" ||
+				(*it)->label == ">" ||  (*it)->label == ">=" ||
+				(*it)->label == "<" ||  (*it)->label == "<=" ||
+				(*it)->label == "==" ||  (*it)->label == "!=")
+				bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
 			bytecode = append(bytecode, invokestatic(phpClass->operators["___echo___"]));
 		}
 		return bytecode;
