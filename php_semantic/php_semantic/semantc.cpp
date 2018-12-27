@@ -269,7 +269,7 @@ PHPConstant* PHPConstant::getConstant(const string& name, PHPClass* cls) {
 		return new PHPConstant(ConstantType::STRING, new int(cls->pushConst(new PHPConstant(ConstantType::UTF8, new string(cur)))));
 
 	} else if(name.find('.') != string::npos) {
-		cls->operators["D<init>"] = cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(F)V", ConstantType::UTF8);
+		cls->operators["D<init>"] = cls->putRef("<init>", "rtl/FloatType", ConstantType::METHOD_REF, "(D)V", ConstantType::UTF8);
 		return new PHPConstant(ConstantType::FLOAT, new float(atof(name.c_str())));
 
 	} else if(name[0] >= '0' && name[0] <= '9') {
@@ -1016,12 +1016,12 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			bytecode = append(bytecode, getBytecode(phpClass, method, body->child[0]->child[i]));
 		}
 
-		int shiftContinue = bytecode.size();
-
 		ByteCode ifblock = getBytecode(phpClass, method, body->child[1]->child[0]);
 		ifblock = append(ifblock, ifeq());
 
 		ByteCode body1 = getBytecode(phpClass, method, body->child[3]);
+
+		int shfCur = body1.size();
 
 		for(int i = 0; i < body->child[2]->child.size(); ++i) {
 			body1 = append(body1, getBytecode(phpClass, method, body->child[2]->child[i]));
@@ -1032,11 +1032,15 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 		int shift = -(int)(body1.size() + ifblock.size() + 1);
 		body1 = append(body1, get_s2(shift));
 
+		shfCur = body1.size() - shfCur;
+
 		shift = body1.size() + 3;
 		ifblock = append(ifblock, get_s2(shift));
 
 		bytecode = append(bytecode, ifblock);
 		bytecode = append(bytecode, body1);
+		
+		int shiftContinue = bytecode.size() - shfCur;
 
 		initCycleGoto(bytecode, shiftContinue);
 
