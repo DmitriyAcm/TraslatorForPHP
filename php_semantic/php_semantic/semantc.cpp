@@ -1199,8 +1199,7 @@ ByteCode getBytecode(PHPClass* phpClass, PHPMethod* method, Node* body) {
 			rightOp == "<" || rightOp == "<=" ||
 			rightOp == "!=" || rightOp == "==")
 			bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
-		bytecode = append(bytecode, invokestatic(phpClass->operators["___or___"]));
-		bytecode = append(bytecode, invokestatic(phpClass->operators["Boolean.valueOf"]));
+		bytecode = append(bytecode, invokestatic(phpClass->operators["___or___"]));;
 		return bytecode;
 	}
 	if (body->label == "!") {
